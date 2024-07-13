@@ -8,10 +8,33 @@ description: A pipeline for retrieving relevant information from a knowledge bas
 requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama
 """
 
+import re
+
+from langchain.agents import (
+    AgentExecutor,
+    AgentOutputParser,
+    LLMSingleActionAgent,
+    Tool,
+)
+from langchain.chains import LLMChain
+from langchain.prompts import StringPromptTemplate
+from langchain_community.utilities import SerpAPIWrapper
+from langchain_core.agents import AgentAction, AgentFinish
+from langchain_openai import OpenAI
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+
+
+import os
+os.environ["SERPAPI_API_KEY"] = "5641da3f1f9250fda76a6126fe6175f58c4710d5eda14037b5b77d5c91de1329"
+os.environ["OPENAI_API_KEY"] = "sk-proj-hgm9dueXcNjpwfuwvPIeT3BlbkFJ59ONB3zwGd5weGyefnhK"
+
+
+
+
 from typing import List, Union, Generator, Iterator
 from schemas import OpenAIChatMessage
-import os
-
 from pydantic import BaseModel
 
 
@@ -25,7 +48,8 @@ class Pipeline:
     def __init__(self):
         self.documents = None
         self.index = None
-
+        self.tools = self.setup_tools()  # Setting up tools during pipeline initialization
+        self.search_api = SerpAPIWrapper()  # Initialize the SerpAPIWrapper here
         self.valves = self.Valves(
             **{
                 "LLAMAINDEX_OLLAMA_BASE_URL": os.getenv("LLAMAINDEX_OLLAMA_BASE_URL", "http://localhost:11434"),
@@ -33,6 +57,58 @@ class Pipeline:
                 "LLAMAINDEX_EMBEDDING_MODEL_NAME": os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text"),
             }
         )
+
+    def setup_tools(self):
+        # This method will setup all your tools, including fake ones for demonstration
+        search_tool = Tool(
+            name="Search",
+            func=self.search_function,  # Define this function to perform actual searches
+            description="Useful for answering questions about current events"
+        )
+
+        fake_tools = [
+            Tool(
+                name=f"FakeTool-{i}",
+                func=self.fake_function,  # Define this as a placeholder function
+                description=f"Placeholder functionality {i}"
+            ) for i in range(99)  # Example range, adjust as needed
+        ]
+
+        return [search_tool] + fake_tools
+
+    def search_function(self, query: str) -> str:
+        # Implement the actual search logic here
+        # Implement the actual search logic here using SerpAPIWrapper
+        search_results = self.search_api.run(query)
+        return search_results
+
+    def fake_function(self, query: str) -> str:
+        # Placeholder function that does nothing useful
+        return "This is a fake response"
+
+    def setup_embeddings(self):
+        # Initialize OpenAI embeddings model
+        self.embeddings_model = OpenAIEmbeddings(model="text-embedding-ada-002")
+
+        # Create Document objects from tool descriptions
+        documents = [Document(page_content=tool.description) for tool in self.tools]
+
+        # Create embeddings for each document
+        embeddings = [self.embeddings_model.embed(document.page_content) for document in documents]
+
+        # Initialize FAISS vector store with these embeddings
+        self.vector_store = FAISS()
+        for embed, tool in zip(embeddings, self.tools):
+            self.vector_store.add(embed, tool)
+
+    def retrieve_tools(self, query: str):
+        # Embed the query
+        query_embedding = self.embeddings_model.embed(query)
+
+        # Retrieve tools based on the query embedding
+        similar_tools, _ = self.vector_store.search(query_embedding, k=5)  # adjust k based on how many tools you want to retrieve
+
+        return similar_tools
 
     async def on_startup(self):
         from llama_index.embeddings.ollama import OllamaEmbedding
@@ -48,11 +124,14 @@ class Pipeline:
             base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
         )
 
+        self.setup_embeddings()
+
         # This function is called when the server is started.
         global documents, index
-
-        self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
-        self.index = VectorStoreIndex.from_documents(self.documents)
+        
+        #unused for now, as i dont want to read data from a RAG pipeline just yet. For now, i just want to make an agent with tooling
+        #self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
+        #self.index = VectorStoreIndex.from_documents(self.documents)
         pass
 
     async def on_shutdown(self):
@@ -68,7 +147,16 @@ class Pipeline:
         print(messages)
         print(user_message)
 
-        query_engine = self.index.as_query_engine(streaming=True)
-        response = query_engine.query(user_message)
 
-        return response.response_gen
+        #unused for now, as i dont want to  use a RAG pipeline just yet. For now, i just want to make an agent with tooling
+
+        #query_engine = self.index.as_query_engine(streaming=True)
+        #response = query_engine.query(user_message)
+
+        #return response.response_gen
+
+        # Retrieve tools relevant to the user message
+        relevant_tools = self.retrieve_tools(user_message)
+        # Use these tools to handle the user's query
+        responses = [tool.func(user_message) for tool in relevant_tools]
+        return " ".join(responses)  # Adjust based on how you want to combine responses
