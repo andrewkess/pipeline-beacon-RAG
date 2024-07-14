@@ -81,7 +81,9 @@ class Pipeline:
         return input_1 + " Hi "
 
     def function_1_using_openai(self, input_1):
-        response = self.openai_model.invoke(input_1)
+        complete_query = "Your task is to provide only the city name based on the user query. \
+        Nothing more, just the city name mentioned. Following is the user query: " + input_1
+        response = self.openai_model.invoke(complete_query)
         return response.content if response else "No response received"
 
     def function_2(self, input_2):
