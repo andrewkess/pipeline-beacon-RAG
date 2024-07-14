@@ -181,7 +181,7 @@ class Pipeline:
     #     response = self.openai_model.invoke(agent2_query)
     #     return response.content
 
-    def where_to_go(state):
+    def where_to_go(self, state):
         messages = state['messages']
         last_message = messages[-1]
         
@@ -197,7 +197,7 @@ class Pipeline:
         # Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response.
 
         print(messages)
-        print(user_message)
+        print('this is the user message ISOLATED' . user_message)
 
         # query_engine = self.index.as_query_engine(streaming=True)
         # response = query_engine.query(user_message)
