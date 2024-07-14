@@ -215,4 +215,6 @@ class Pipeline:
         inputs = {"messages": [HumanMessage(content=user_message)]}
 
         output = self.app.invoke(inputs)
+        print(output)
+
         return output
