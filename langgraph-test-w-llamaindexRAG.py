@@ -202,7 +202,7 @@ class Pipeline:
             return "Fake Title for Now"
 
         print(messages)
-        print('this is the user message ISOLATED' . user_message)
+        print(user_message)
 
         # query_engine = self.index.as_query_engine(streaming=True)
         # response = query_engine.query(user_message)
