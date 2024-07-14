@@ -5,7 +5,7 @@ date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
-requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai
+requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm
 """
 
 from typing import List, Union, Generator, Iterator
@@ -14,6 +14,7 @@ import os
 from langgraph.graph import Graph
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
+from langchain_community.utilities import OpenWeatherMapAPIWrapper
 
 
 class Pipeline:
@@ -23,6 +24,8 @@ class Pipeline:
         LLAMAINDEX_MODEL_NAME: str
         LLAMAINDEX_EMBEDDING_MODEL_NAME: str
         OPENAI_API_KEY: str
+        OPENWEATHERMAP_API_KEY: str
+
 
     def __init__(self):
         self.documents = None
@@ -34,21 +37,24 @@ class Pipeline:
                 "LLAMAINDEX_MODEL_NAME": os.getenv("LLAMAINDEX_MODEL_NAME", "llama3"),
                 "LLAMAINDEX_EMBEDDING_MODEL_NAME": os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text"),
                 "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", "default-key"),
+                "OPENWEATHERMAP_API_KEY": os.getenv("OPENWEATHERMAP_API_KEY", "default-key"),
             }
         )
         # Set LLM model to OpenAI
         self.openai_model = ChatOpenAI(api_key=self.valves.OPENAI_API_KEY)
 
+        self.weather = OpenWeatherMapAPIWrapper()
+
         # Define a LangChain graph
         self.workflow = Graph()
 
         self.workflow.add_node("agent", self.function_1_using_openai)
-        self.workflow.add_node("node_2", self.function_2)
+        self.workflow.add_node("tool", self.function_2)
 
-        self.workflow.add_edge('agent', 'node_2')
+        self.workflow.add_edge('agent', 'tool')
 
         self.workflow.set_entry_point("agent")
-        self.workflow.set_finish_point("node_2")
+        self.workflow.set_finish_point("tool")
 
         self.app = self.workflow.compile()
 
@@ -87,7 +93,8 @@ class Pipeline:
         return response.content if response else "No response received"
 
     def function_2(self, input_2):
-        return "Agent Says: " + input_2
+        weather_data = self.weather.run(input_2)
+        return weather_data
 
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
