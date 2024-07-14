@@ -16,7 +16,7 @@ from langgraph.graph import Graph
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
-from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
 from langchain_core.utils.function_calling import convert_to_openai_function
@@ -217,4 +217,16 @@ class Pipeline:
         output = self.app.invoke(inputs)
         print(output)
 
-        return output
+                # Initialize a variable to hold the AI response
+        ai_response = None
+
+        # Check if 'messages' key exists and iterate over messages
+        if 'messages' in output:
+            for message in output['messages']:
+                # Check if the message is an AIMessage
+                if isinstance(message, AIMessage):
+                    ai_response = message.content
+                    break  # Assuming you only need the first AIMessage content
+
+        # Return the AI response or a default message if no AIMessage was found
+        return ai_response if ai_response else "No AI response found"
