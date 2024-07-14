@@ -218,7 +218,7 @@ class Pipeline:
         print(output)
 
         # Assuming output always contains a 'messages' list with at least one message
-        last_message = output['messages'][-2]['content'] if output['messages'] else "No AI message response found from pipeline"
+        last_message = output['messages'][-1].content if output['messages'] else "No AI message response found from pipeline"
 
         return last_message
 
