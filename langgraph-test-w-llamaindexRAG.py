@@ -42,12 +42,12 @@ class Pipeline:
         # Define a LangChain graph
         self.workflow = Graph()
 
-        self.workflow.add_node("node_1", self.function_1_using_openai)
+        self.workflow.add_node("agent", self.function_1_using_openai)
         self.workflow.add_node("node_2", self.function_2)
 
-        self.workflow.add_edge('node_1', 'node_2')
+        self.workflow.add_edge('agent', 'node_2')
 
-        self.workflow.set_entry_point("node_1")
+        self.workflow.set_entry_point("agent")
         self.workflow.set_finish_point("node_2")
 
         self.app = self.workflow.compile()
@@ -85,7 +85,7 @@ class Pipeline:
         return response.content if response else "No response received"
 
     def function_2(self, input_2):
-        return input_2 + "there"
+        return "Agent Says: " + input_2
 
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
