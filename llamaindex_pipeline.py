@@ -7,6 +7,8 @@ license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
 requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama
 """
+from dotenv import load_dotenv
+load_dotenv()  # This loads the env variables from .env file into the environment
 
 import re
 
@@ -27,8 +29,13 @@ from langchain_openai import OpenAIEmbeddings
 
 
 import os
-os.environ["SERPAPI_API_KEY"] = "5641da3f1f9250fda76a6126fe6175f58c4710d5eda14037b5b77d5c91de1329"
-os.environ["OPENAI_API_KEY"] = "sk-proj-hgm9dueXcNjpwfuwvPIeT3BlbkFJ59ONB3zwGd5weGyefnhK"
+#os.environ["SERPAPI_API_KEY"] = os.getenv("SERPAPI_API_KEY")
+#os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
+
+# Get the environment variables
+serpapi_key = os.getenv("SERPAPI_API_KEY")
+openai_key = os.getenv("OPENAI_API_KEY")
 
 
 
