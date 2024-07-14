@@ -16,7 +16,15 @@ from langgraph.graph import Graph
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.utils.function_calling import convert_to_openai_function
+from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
+from langchain_core.utils.function_calling import convert_to_openai_function
+from langgraph.prebuilt import ToolInvocation
+import json
+from langchain_core.messages import FunctionMessage
+from langgraph.prebuilt import ToolExecutor
+from langgraph.graph import StateGraph, END
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -51,22 +59,48 @@ class Pipeline:
             }
         )
         # Set LLM model to OpenAI
-        self.openai_model = ChatOpenAI(api_key=self.valves.OPENAI_API_KEY)
+        self.openai_model = ChatOpenAI(api_key=self.valves.OPENAI_API_KEY, temperature=0, streaming=True)
 
-        self.weather = OpenWeatherMapAPIWrapper()
+        #self.weather = OpenWeatherMapAPIWrapper()
+
+        self.tools = [OpenWeatherMapQueryRun()]
+        self.functions = [convert_to_openai_function(t) for t in self.tools]
+        self.openai_model = self.openai_model.bind_functions(self.functions)
+
+        self.tool_executor = ToolExecutor(self.tools)
+
 
         # Define a LangChain graph
-        self.workflow = Graph()
+        # self.workflow = Graph()
 
-        self.workflow.add_node("agent", self.function_1_using_openai)
+        self.workflow = StateGraph(AgentState)
+
+
+        self.workflow.add_node("agent", self.function_1)
         self.workflow.add_node("tool", self.function_2)
-        self.workflow.add_node("responder", self.function_3)
 
-        self.workflow.add_edge('agent', 'tool')
-        self.workflow.add_edge('tool', 'responder')
+        # The conditional edge requires the following info below.
+        # First, we define the start node. We use `agent`.
+        # This means these are the edges taken after the `agent` node is called.
+        # Next, we pass in the function that will determine which node is called next, in our case where_to_go().
+
+        self.workflow.add_conditional_edges("agent", self.where_to_go,{   # Based on the return from where_to_go
+                                                                # If return is "continue" then we call the tool node.
+                                                                "continue": "tool",
+                                                                # Otherwise we finish. END is a special node marking that the graph should finish.
+                                                                "end": END
+                                                            }
+        )
+
+        # We now add a normal edge from `tools` to `agent`.
+        # This means that if `tool` is called, then it has to call the 'agent' next. 
+        self.workflow.add_edge('tool', 'agent')
+
+        # Basically, agent node has the option to call a tool node based on a condition, 
+        # whereas tool node must call the agent in all cases based on this setup.
 
         self.workflow.set_entry_point("agent")
-        self.workflow.set_finish_point("responder")
+
 
         self.app = self.workflow.compile()
 
@@ -104,6 +138,11 @@ class Pipeline:
         response = self.openai_model.invoke(complete_query)
         state['messages'].append(response.content) # appending AIMessage response to the AgentState
         return state
+    
+    def function_1(self, state):
+        messages = state['messages']
+        response = self.openai_model.invoke(messages)
+        return {"messages": [response]}    
 
     def function_2(self, state):
         messages = state['messages']
@@ -112,15 +151,45 @@ class Pipeline:
         state['messages'].append(weather_data)
         return state
 
-    def function_3(self, state):
+    def function_2(self, state):
         messages = state['messages']
-        user_input = messages[0]
-        available_info = messages[-1]
-        agent2_query = "Your task is to provide info concisely based on the user query and the available information from the internet. \
-                            Following is the user query: " + user_input + " Available information: " + available_info
-        response = self.openai_model.invoke(agent2_query)
-        return response.content
+        last_message = messages[-1] # this has the query we need to send to the tool provided by the agent
 
+        parsed_tool_input = json.loads(last_message.additional_kwargs["function_call"]["arguments"])
+
+        # We construct an ToolInvocation from the function_call and pass in the tool name and the expected str input for OpenWeatherMap tool
+        action = ToolInvocation(
+            tool=last_message.additional_kwargs["function_call"]["name"],
+            tool_input=parsed_tool_input['__arg1'],
+        )
+        
+        # We call the tool_executor and get back a response
+        response = self.tool_executor.invoke(action)
+
+        # We use the response to create a FunctionMessage
+        function_message = FunctionMessage(content=str(response), name=action.tool)
+
+        # We return a list, because this will get added to the existing list
+        return {"messages": [function_message]}
+
+    # def function_3(self, state):
+    #     messages = state['messages']
+    #     user_input = messages[0]
+    #     available_info = messages[-1]
+    #     agent2_query = "Your task is to provide info concisely based on the user query and the available information from the internet. \
+    #                         Following is the user query: " + user_input + " Available information: " + available_info
+    #     response = self.openai_model.invoke(agent2_query)
+    #     return response.content
+
+    def where_to_go(state):
+        messages = state['messages']
+        last_message = messages[-1]
+        
+        if "function_call" in last_message.additional_kwargs:
+            return "continue"
+        else:
+            return "end"
+    
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
@@ -136,7 +205,9 @@ class Pipeline:
         # return response.response_gen
     
     # Invoke the LangGraph compiled app
-        inputs = {"messages": [user_message]}
+        # inputs = {"messages": [user_message]}
+        
+        inputs = {"messages": [HumanMessage(content=user_message)]}
 
         output = self.app.invoke(inputs)
         return output
