@@ -5,14 +5,14 @@ date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
-requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx
+requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai
 """
 
 from typing import List, Union, Generator, Iterator
 from schemas import OpenAIChatMessage
 import os
 from langgraph.graph import Graph
-
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 
@@ -22,6 +22,7 @@ class Pipeline:
         LLAMAINDEX_OLLAMA_BASE_URL: str
         LLAMAINDEX_MODEL_NAME: str
         LLAMAINDEX_EMBEDDING_MODEL_NAME: str
+        OPENAI_API_KEY: str
 
     def __init__(self):
         self.documents = None
@@ -32,13 +33,16 @@ class Pipeline:
                 "LLAMAINDEX_OLLAMA_BASE_URL": os.getenv("LLAMAINDEX_OLLAMA_BASE_URL", "http://localhost:11434"),
                 "LLAMAINDEX_MODEL_NAME": os.getenv("LLAMAINDEX_MODEL_NAME", "llama3"),
                 "LLAMAINDEX_EMBEDDING_MODEL_NAME": os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text"),
+                "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", "default-key"),
             }
         )
+        # Set LLM model to OpenAI
+        self.openai_model = ChatOpenAI(api_key=self.valves.OPENAI_API_KEY)
 
         # Define a LangChain graph
         self.workflow = Graph()
 
-        self.workflow.add_node("node_1", self.function_1)
+        self.workflow.add_node("node_1", self.function_1_using_openai)
         self.workflow.add_node("node_2", self.function_2)
 
         self.workflow.add_edge('node_1', 'node_2')
@@ -75,6 +79,10 @@ class Pipeline:
 
     def function_1(self, input_1):
         return input_1 + " Hi "
+
+    def function_1_using_openai(self, input_1):
+        response = self.openai_model.invoke(input_1)
+        return response.content if response else "No response received"
 
     def function_2(self, input_2):
         return input_2 + "there"
