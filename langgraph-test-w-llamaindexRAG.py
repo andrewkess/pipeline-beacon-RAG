@@ -5,7 +5,7 @@ date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
-requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm
+requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community
 """
 
 from typing import List, Union, Generator, Iterator
