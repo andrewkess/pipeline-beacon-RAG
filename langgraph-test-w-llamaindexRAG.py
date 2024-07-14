@@ -217,22 +217,27 @@ class Pipeline:
         output = self.app.invoke(inputs)
         print(output)
 
-        # Initialize a variable to hold the last AI response
-        last_ai_response = None
+        # Assuming output always contains a 'messages' list with at least one message
+        last_message = output['messages'][-1]['content'] if output['messages'] else "No AI message response found from pipeline"
 
-        # Initialize a variable to hold the AI response
-        ai_response = None
+        return last_message
 
-        # Check if 'messages' key exists and iterate over messages
-        if 'messages' in output:
-            for message in output['messages']:
-                # Check if the message is an AIMessage
-                if isinstance(message, AIMessage):
-                    ai_response = message.content
-                    # break  # Assuming you only need the first AIMessage content
+        # # Initialize a variable to hold the last AI response
+        # last_ai_response = None
 
-        # Return the AI response or a default message if no AIMessage was found
-        return ai_response if ai_response else "No AI response found"
+        # # Initialize a variable to hold the AI response
+        # ai_response = None
+
+        # # Check if 'messages' key exists and iterate over messages
+        # if 'messages' in output:
+        #     for message in output['messages']:
+        #         # Check if the message is an AIMessage
+        #         if isinstance(message, AIMessage):
+        #             ai_response = message.content
+        #             # break  # Assuming you only need the first AIMessage content
+
+        # # Return the AI response or a default message if no AIMessage was found
+        # return ai_response if ai_response else "No AI response found"
 
 
         # # Check if 'messages' key exists and iterate over messages
