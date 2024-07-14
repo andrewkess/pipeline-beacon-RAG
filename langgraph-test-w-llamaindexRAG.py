@@ -144,12 +144,12 @@ class Pipeline:
         response = self.openai_model.invoke(messages)
         return {"messages": [response]}    
 
-    def function_2(self, state):
-        messages = state['messages']
-        agent_response = messages[-1]
-        weather_data = self.weather.run(agent_response)
-        state['messages'].append(weather_data)
-        return state
+    # def function_2(self, state):
+    #     messages = state['messages']
+    #     agent_response = messages[-1]
+    #     weather_data = self.weather.run(agent_response)
+    #     state['messages'].append(weather_data)
+    #     return state
 
     def function_2(self, state):
         messages = state['messages']
