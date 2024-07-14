@@ -196,6 +196,11 @@ class Pipeline:
         # This is where you can add your custom RAG pipeline.
         # Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response.
 
+        # If you'd like to check for title generation, you can add the following check
+        if body.get("title", False):
+            print("Title Generation Request")
+            return "Fake Title for Now"
+
         print(messages)
         print('this is the user message ISOLATED' . user_message)
 
