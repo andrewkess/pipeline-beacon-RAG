@@ -197,9 +197,9 @@ class Pipeline:
         # Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response.
 
         # If you'd like to check for title generation, you can add the following check
-        if body.get("title", False):
-            print("Title Generation Request")
-            return "Fake Title for Now"
+        # if body.get("title", False):
+        #     print("Title Generation Request")
+        #     return "Fake Title for Now"
 
         print(messages)
         print(user_message)
