@@ -136,5 +136,7 @@ class Pipeline:
         # return response.response_gen
     
     # Invoke the LangGraph compiled app
-        output = self.app.invoke(user_message)
+        inputs = {"messages": [user_message]}
+
+        output = self.app.invoke(inputs)
         return output
