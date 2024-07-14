@@ -8,14 +8,18 @@ description: A pipeline for retrieving relevant information from a knowledge bas
 requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community
 """
 
-from typing import List, Union, Generator, Iterator
+from typing import List, Union, Generator, Iterator, TypedDict, Annotated, Sequence
 from schemas import OpenAIChatMessage
+import operator
 import os
 from langgraph.graph import Graph
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
+from langchain_core.messages import BaseMessage
 
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], operator.add]
 
 class Pipeline:
 
@@ -30,6 +34,12 @@ class Pipeline:
     def __init__(self):
         self.documents = None
         self.index = None
+
+        # assign AgentState as an empty dict
+        self.AgentState = {}
+
+        # messages key will be assigned as an empty array. We will append new messages as we pass along nodes. 
+        self.AgentState["messages"] = []
 
         self.valves = self.Valves(
             **{
@@ -50,11 +60,13 @@ class Pipeline:
 
         self.workflow.add_node("agent", self.function_1_using_openai)
         self.workflow.add_node("tool", self.function_2)
+        self.workflow.add_node("responder", self.function_3)
 
         self.workflow.add_edge('agent', 'tool')
+        self.workflow.add_edge('tool', 'responder')
 
         self.workflow.set_entry_point("agent")
-        self.workflow.set_finish_point("tool")
+        self.workflow.set_finish_point("responder")
 
         self.app = self.workflow.compile()
 
@@ -83,18 +95,31 @@ class Pipeline:
         # This function is called when the server is stopped.
         pass
 
-    def function_1(self, input_1):
-        return input_1 + " Hi "
 
-    def function_1_using_openai(self, input_1):
+    def function_1_using_openai(self, state):
+        messages = state['messages']
+        user_input = messages[-1]
         complete_query = "Your task is to provide only the city name based on the user query. \
-        Nothing more, just the city name mentioned. Following is the user query: " + input_1
+                        Nothing more, just the city name mentioned. Following is the user query: " + user_input
         response = self.openai_model.invoke(complete_query)
-        return response.content if response else "No response received"
+        state['messages'].append(response.content) # appending AIMessage response to the AgentState
+        return state
 
-    def function_2(self, input_2):
-        weather_data = self.weather.run(input_2)
-        return weather_data
+    def function_2(self, state):
+        messages = state['messages']
+        agent_response = messages[-1]
+        weather_data = self.weather.run(agent_response)
+        state['messages'].append(weather_data)
+        return state
+
+    def function_3(self, state):
+        messages = state['messages']
+        user_input = messages[0]
+        available_info = messages[-1]
+        agent2_query = "Your task is to provide info concisely based on the user query and the available information from the internet. \
+                            Following is the user query: " + user_input + " Available information: " + available_info
+        response = self.openai_model.invoke(agent2_query)
+        return response.content
 
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
