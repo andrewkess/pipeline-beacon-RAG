@@ -35,6 +35,19 @@ class Pipeline:
             }
         )
 
+        # Define a LangChain graph
+        self.workflow = Graph()
+
+        self.workflow.add_node("node_1", self.function_1)
+        self.workflow.add_node("node_2", self.function_2)
+
+        self.workflow.add_edge('node_1', 'node_2')
+
+        self.workflow.set_entry_point("node_1")
+        self.workflow.set_finish_point("node_2")
+
+        self.app = self.workflow.compile()
+
     async def on_startup(self):
         from llama_index.embeddings.ollama import OllamaEmbedding
         from llama_index.llms.ollama import Ollama
@@ -60,6 +73,12 @@ class Pipeline:
         # This function is called when the server is stopped.
         pass
 
+    def function_1(self, input_1):
+        return input_1 + " Hi "
+
+    def function_2(self, input_2):
+        return input_2 + "there"
+
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
@@ -69,7 +88,11 @@ class Pipeline:
         print(messages)
         print(user_message)
 
-        query_engine = self.index.as_query_engine(streaming=True)
-        response = query_engine.query(user_message)
+        # query_engine = self.index.as_query_engine(streaming=True)
+        # response = query_engine.query(user_message)
 
-        return response.response_gen
+        # return response.response_gen
+    
+    # Invoke the LangGraph compiled app
+        output = self.app.invoke(user_message)
+        return output
