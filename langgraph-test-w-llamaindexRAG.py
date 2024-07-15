@@ -12,19 +12,15 @@ from typing import List, Union, Generator, Iterator, TypedDict, Annotated, Seque
 from schemas import OpenAIChatMessage
 import operator
 import os
-from langgraph.graph import Graph
+from langgraph.graph import Graph, StateGraph, END
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, FunctionMessage, AIMessage
 from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
-from langchain_core.utils.function_calling import convert_to_openai_function
-from langgraph.prebuilt import ToolInvocation
 import json
-from langchain_core.messages import FunctionMessage
-from langgraph.prebuilt import ToolExecutor
-from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolExecutor, ToolInvocation
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -130,14 +126,14 @@ class Pipeline:
         pass
 
 
-    def function_1_using_openai(self, state):
-        messages = state['messages']
-        user_input = messages[-1]
-        complete_query = "Your task is to provide only the city name based on the user query. \
-                        Nothing more, just the city name mentioned. Following is the user query: " + user_input
-        response = self.openai_model.invoke(complete_query)
-        state['messages'].append(response.content) # appending AIMessage response to the AgentState
-        return state
+    # def function_1_using_openai(self, state):
+    #     messages = state['messages']
+    #     user_input = messages[-1]
+    #     complete_query = "Your task is to provide only the city name based on the user query. \
+    #                     Nothing more, just the city name mentioned. Following is the user query: " + user_input
+    #     response = self.openai_model.invoke(complete_query)
+    #     state['messages'].append(response.content) # appending AIMessage response to the AgentState
+    #     return state
     
     def function_1(self, state):
         messages = state['messages']
@@ -212,7 +208,7 @@ class Pipeline:
     # Invoke the LangGraph compiled app
         # inputs = {"messages": [user_message]}
         
-        inputs = {"messages": [HumanMessage(content=user_message)]}
+        inputs = {"messages": [SystemMessage(content=messages[0].content), HumanMessage(content=user_message)]}
 
         output = self.app.invoke(inputs)
         print(output)
