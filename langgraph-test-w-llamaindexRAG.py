@@ -198,6 +198,9 @@ class Pipeline:
             elif message['role'] == 'user':
                 # Always add the user message
                 input_messages.append(HumanMessage(content=message['content']))
+            elif message['role'] == 'assistant':
+                # Always add the user message
+                input_messages.append(AIMessage(content=message['content']))
 
         return input_messages
 
