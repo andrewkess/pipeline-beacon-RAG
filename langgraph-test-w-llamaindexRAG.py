@@ -185,7 +185,22 @@ class Pipeline:
             return "continue"
         else:
             return "end"
-    
+
+    def prepare_pipeline_input(self, messages):
+        # Initialize the list that will hold the message objects
+        input_messages = []
+
+        # Loop through the list of message dictionaries
+        for message in messages:
+            if message['role'] == 'system':
+                # Add a system message when it exists
+                input_messages.append(SystemMessage(content=message['content']))
+            elif message['role'] == 'user':
+                # Always add the user message
+                input_messages.append(HumanMessage(content=message['content']))
+
+        return input_messages
+
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
@@ -208,11 +223,13 @@ class Pipeline:
     # Invoke the LangGraph compiled app
         # inputs = {"messages": [user_message]}
         
-        inputs = {"messages": [
-            # SystemMessage(content=messages[0].content), 
-            HumanMessage(content=user_message)]}
+        # inputs = {"messages": [
+        #     # SystemMessage(content=messages[0].content), 
+        #     HumanMessage(content=user_message)]}
 
-        output = self.app.invoke(messages)
+        inputs = {"messages": self.prepare_pipeline_input(messages)}
+
+        output = self.app.invoke(inputs)
         print(output)
 
         # Assuming output always contains a 'messages' list with at least one message
