@@ -208,9 +208,11 @@ class Pipeline:
     # Invoke the LangGraph compiled app
         # inputs = {"messages": [user_message]}
         
-        inputs = {"messages": [SystemMessage(content=messages[0].content), HumanMessage(content=user_message)]}
+        inputs = {"messages": [
+            # SystemMessage(content=messages[0].content), 
+            HumanMessage(content=user_message)]}
 
-        output = self.app.invoke(inputs)
+        output = self.app.invoke(messages)
         print(output)
 
         # Assuming output always contains a 'messages' list with at least one message
