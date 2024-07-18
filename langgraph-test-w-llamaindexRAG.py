@@ -55,7 +55,7 @@ class Pipeline:
             }
         )
         # Set LLM model to OpenAI
-        self.openai_model = ChatOpenAI(model="gpt-4o=mini", api_key=self.valves.OPENAI_API_KEY, temperature=0, streaming=True)
+        self.openai_model = ChatOpenAI(model="gpt-4o-mini", api_key=self.valves.OPENAI_API_KEY, temperature=0, streaming=True)
 
         #self.weather = OpenWeatherMapAPIWrapper()
 
