@@ -5,7 +5,7 @@ date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
-requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community
+requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community, langchain-experimental
 """
 
 from typing import List, Union, Generator, Iterator, TypedDict, Annotated, Sequence
@@ -21,6 +21,7 @@ from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
 import json
 from langgraph.prebuilt import ToolExecutor, ToolInvocation
+from langchain_experimental.llms.ollama_functions import OllamaFunctions
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -48,21 +49,27 @@ class Pipeline:
         self.valves = self.Valves(
             **{
                 "LLAMAINDEX_OLLAMA_BASE_URL": os.getenv("LLAMAINDEX_OLLAMA_BASE_URL", "http://localhost:11434"),
-                "LLAMAINDEX_MODEL_NAME": os.getenv("LLAMAINDEX_MODEL_NAME", "llama3"),
+                "LLAMAINDEX_MODEL_NAME": os.getenv("LLAMAINDEX_MODEL_NAME", "llama3-groq-tool-use"),
                 "LLAMAINDEX_EMBEDDING_MODEL_NAME": os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text"),
                 "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", "default-key"),
                 "OPENWEATHERMAP_API_KEY": os.getenv("OPENWEATHERMAP_API_KEY", "default-key"),
             }
         )
         # Set LLM model to OpenAI
-        self.openai_model = ChatOpenAI(api_key=self.valves.OPENAI_API_KEY, model="gpt-4o-mini", temperature=0)
+        #self.openai_model = ChatOpenAI(api_key=self.valves.OPENAI_API_KEY, model="gpt-4o-mini", temperature=0)
 #     model="gpt-4o-mini",
+
+
+        self.llm = OllamaFunctions(
+                    model=self.valves.LLAMAINDEX_MODEL_NAME,
+                    base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+                )
 
         #self.weather = OpenWeatherMapAPIWrapper()
 
         self.tools = [OpenWeatherMapQueryRun()]
         self.functions = [convert_to_openai_function(t) for t in self.tools]
-        self.openai_model = self.openai_model.bind_functions(self.functions)
+        self.llm = self.llm.bind_functions(self.functions)
 
         self.tool_executor = ToolExecutor(self.tools)
 
@@ -138,7 +145,8 @@ class Pipeline:
     
     def function_1(self, state):
         messages = state['messages']
-        response = self.openai_model.invoke(messages)
+        response = self.llm.invoke(messages)
+        print(response)
         return {"messages": [response]}    
 
     # def function_2(self, state):
