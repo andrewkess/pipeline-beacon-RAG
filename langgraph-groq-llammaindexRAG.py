@@ -144,11 +144,52 @@ class Pipeline:
     #     state['messages'].append(response.content) # appending AIMessage response to the AgentState
     #     return state
     
+    # def function_1(self, state):
+    #     messages = state['messages']
+    #     response = self.llm.invoke(messages)
+    #     print(f"Response from LLM: {response}")
+    #     return {"messages": [response]}    
+
     def function_1(self, state):
         messages = state['messages']
-        response = self.llm.invoke(messages)
-        print(response)
-        return {"messages": [response]}    
+        # Assuming messages[-1] should contain the necessary information
+        last_message = messages[-1]
+        
+        # Debugging: Print last_message to verify it contains what's expected
+        print(f"Last Message: {last_message}")
+
+        # Check and parse the last_message appropriately before invoking
+        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+            tool_call = last_message.tool_calls[-1]
+            tool_call_details = f"Name: {tool_call['name']}, Args: {tool_call['args']}"
+            
+            # Debugging: Print details of the tool being called
+            print(f"Preparing to invoke tool with details: {tool_call_details}")
+            
+            # Properly format or structure the input for invocation
+            # Assuming the invoke method might need a structured input
+            structured_input = {
+                "name": tool_call['name'],
+                "args": tool_call['args']
+            }
+
+            # Debugging: Print the structured input
+            print(f"Structured Input for LLM: {structured_input}")
+            
+            try:
+                # Invoke the tool and catch any errors during invocation
+                response = self.llm.invoke(structured_input)
+                print(f"Response from LLM: {response}")
+            except Exception as e:
+                print(f"Error during tool invocation: {e}")
+                response = f"Failed to invoke tool due to error: {e}"
+
+            # Assuming function needs to return a modified state
+            return {"messages": [response]}
+        else:
+            # Handle case where no tool calls are available
+            print("No tool calls found in the last message.")
+            return state
 
     # def function_2(self, state):
     #     messages = state['messages']
