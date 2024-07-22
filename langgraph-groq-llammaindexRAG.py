@@ -63,15 +63,16 @@ class Pipeline:
         self.llm = OllamaFunctions(
                     model=self.valves.LLAMAINDEX_MODEL_NAME,
                     base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+                    format="json"  # Ensure JSON format is used for tool integration
                 )
 
         #self.weather = OpenWeatherMapAPIWrapper()
 
         self.tools = [OpenWeatherMapQueryRun()]
-        self.functions = [convert_to_openai_function(t) for t in self.tools]
-        self.llm = self.llm.bind_functions(self.functions)
+       # self.functions = [convert_to_ollama_tool(t) for t in self.tools]
+        self.llm = self.llm.bind_tools(self.tools)
 
-        self.tool_executor = ToolExecutor(self.tools)
+        #self.tool_executor = ToolExecutor(self.tools)
 
 
         # Define a LangChain graph
@@ -160,19 +161,14 @@ class Pipeline:
         messages = state['messages']
         last_message = messages[-1] # this has the query we need to send to the tool provided by the agent
 
-        parsed_tool_input = json.loads(last_message.additional_kwargs["function_call"]["arguments"])
-
-        # We construct an ToolInvocation from the function_call and pass in the tool name and the expected str input for OpenWeatherMap tool
-        action = ToolInvocation(
-            tool=last_message.additional_kwargs["function_call"]["name"],
-            tool_input=parsed_tool_input['__arg1'],
-        )
-        
+        # Get the last tool call which will contain the response
+        tool_call = last_message.tool_calls
+     
         # We call the tool_executor and get back a response
-        response = self.tool_executor.invoke(action)
+        response = self.llm.invoke(tool_call)
 
         # We use the response to create a FunctionMessage
-        function_message = FunctionMessage(content=str(response), name=action.tool)
+        function_message = FunctionMessage(content=str(response), name=tool_call.name)
 
         # We return a list, because this will get added to the existing list
         return {"messages": [function_message]}
