@@ -191,7 +191,7 @@ class Pipeline:
             print(f"Response from tool execution: {response}")
 
             # Constructing ToolMessage with the required 'tool_call_id' field
-            function_message = AIMessage(content=str(response), name=tool_name, tool_call_id=tool_call_id)
+            function_message = ToolMessage(content=str(response), name=tool_name, tool_call_id=tool_call_id)
             #function_message = FunctionMessage(content=str(response), name=action.tool)
 
             # Return the new state replacing the old messages with the function message
@@ -267,7 +267,7 @@ class Pipeline:
         inputs = {"messages": self.prepare_pipeline_input(messages)}
 
         output = self.app.invoke(inputs)
-        print(output)
+        #print(output)
 
         # Assuming output always contains a 'messages' list with at least one message
         last_message = output['messages'][-1].content if output['messages'] else "No AI message response found from pipeline"
