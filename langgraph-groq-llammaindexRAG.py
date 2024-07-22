@@ -135,22 +135,43 @@ class Pipeline:
         pass
 
 
+    # def function_1(self, state):
+    #     messages = state['messages']
+    #     # Assuming messages[-1] should contain the necessary information
+    #     last_message = messages[-1]
+        
+    #     # Debugging: Print last_message to verify it contains what's expected
+    #     print(f"Calling function 1. Last Message: {last_message}")
+    #     print(f"Current Messages: {messages}")
+
+    #     response = self.llm.invoke(messages)
+    #     print(f"Response from function 1: {response}")       
+    #     # ai_message = AIMessage(content=str(response))
+
+    #     # Return the new state replacing the old messages with the function message
+    #     return {"messages": [response]}
+
     def function_1(self, state):
         messages = state['messages']
-        # Assuming messages[-1] should contain the necessary information
         last_message = messages[-1]
-        
-        # Debugging: Print last_message to verify it contains what's expected
-        print(f"Calling function 1. Last Message: {last_message}")
-        print(f"Current Messages: {messages}")
 
-        response = self.llm.invoke(messages)
-        print(f"Response from function 1: {response}")       
-        # ai_message = AIMessage(content=str(response))
+        # Debugging: Log details about the last message
+        print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {last_message.content}")
 
-        # Return the new state replacing the old messages with the function message
-        return {"messages": [response]}
+        # Handle messages based on type
+        if isinstance(last_message, ToolMessage):
+            # If the last message is from a tool, maybe format it or just forward it
+            response_content = f"Here's the updated information: {last_message.content}"
+        elif isinstance(last_message, HumanMessage):
+            # Process normally as user query
+            response_content = self.llm.invoke(messages)
+        else:
+            # Default case or log an error/unknown type
+            response_content = "Sorry, I couldn't process your request right now."
 
+        # Log the response for debugging
+        print(f"Response from function 1: {response_content}")       
+        return {"messages": [AIMessage(content=response_content)]}
 
     # def function_2(self, state):
     #     messages = state['messages']
