@@ -184,13 +184,21 @@ class Pipeline:
                 print(f"Error during tool invocation: {e}")
                 response = f"Failed to invoke tool due to error: {e}"
 
-            # Assuming function needs to return a modified state
-            return {"messages": [response]}
+
+            # Constructing AIMessage
+            ai_message = AIMessage(content=str(response))            
+            # Return the new state replacing the old messages with the function message
+            return {"messages": [ai_message]}
+
         else:
             # Handle case where no tool calls are available
             print("No tool calls found in the last message.")
             response = self.llm.invoke(messages)
-            return {"messages": [response]}
+            # Constructing AIMessage
+            ai_message = AIMessage(content=str(response))            
+            # Return the new state replacing the old messages with the function message
+            return {"messages": [ai_message]}
+
 
     # def function_2(self, state):
     #     messages = state['messages']
@@ -198,53 +206,6 @@ class Pipeline:
     #     weather_data = self.weather.run(agent_response)
     #     state['messages'].append(weather_data)
     #     return state
-
-    # def function_2(self, state):
-    #     messages = state['messages']
-    #     last_message = messages[-1] # this has the query we need to send to the tool provided by the agent
-
-    #     # Get the last tool call which will contain the response
-    #     tool_call = last_message.tool_calls
-     
-    #     # We call the tool_executor and get back a response
-    #     response = self.llm.invoke(tool_call)
-
-    #     # We use the response to create a FunctionMessage
-    #     function_message = FunctionMessage(content=str(response), name=tool_call.name)
-
-    #     # We return a list, because this will get added to the existing list
-    #     return {"messages": [function_message]}
-    
-    # def function_2(self, state):
-    #     messages = state['messages']
-    #     last_message = messages[-1]  # Retrieve the last message which should have the tool call details
-
-    #     # Verify that the last message has tool calls and select the last one
-    #     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
-    #         tool_call = last_message.tool_calls[-1]
-    #         # You must ensure that tool_call['id'] is accessible and correct
-    #         tool_call_id = tool_call['id']  # This must match the 'id' field in the tool call
-
-    #         # Print the tool call details for debugging
-    #         print(f"Tool Call Details: {tool_call}")
-
-    #         # Invoke the tool using the formatted message
-    #         response = self.llm.invoke(tool_call)
-
-    #         # Print the response from the tool execution for debugging
-    #         print(f"Response from tool execution: {response}")
-
-    #         # Constructing ToolMessage with the required 'tool_call_id' field
-    #         function_message = ToolMessage(content=str(response), name=tool_call['name'], tool_call_id=tool_call_id)
-            
-    #         # Return the new state replacing the old messages with the function message
-    #         return {"messages": [function_message]}
-        # else:
-        #     # Handle case where no tool calls are found
-        #     error_message = "No tool calls found in the last message or incorrect message format."
-        #     print(error_message)
-        #     # Return the error message in the state
-        #     return {"messages": [ToolMessage(content=error_message, name="Error")]}
 
     def function_2(self, state):
         messages = state['messages']
