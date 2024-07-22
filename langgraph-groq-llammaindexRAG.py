@@ -173,38 +173,57 @@ class Pipeline:
     #     # We return a list, because this will get added to the existing list
     #     return {"messages": [function_message]}
     
+    # def function_2(self, state):
+    #     messages = state['messages']
+    #     last_message = messages[-1]  # Retrieve the last message which should have the tool call details
+
+    #     # Verify that the last message has tool calls and select the last one
+    #     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+    #         tool_call = last_message.tool_calls[-1]
+
+    #         # Print the tool call details for debugging
+    #         print(f"Tool Call Details: {tool_call}")
+
+    #         # Prepare the message for invocation according to expected Ollama format
+    #         tool_message = [{"role": "system", "content": "Executing tool."},
+    #                         {"role": "user", "content": f"Please run the tool {tool_call['name']} with parameters {tool_call['args']}."}]
+
+    #         # Invoke the tool using the formatted message
+    #         response = self.llm.invoke(tool_message)
+
+    #         # Print the response from the tool execution for debugging
+    #         print(f"Response from tool execution: {response}")
+
+    #         # Create a FunctionMessage with the response
+    #         function_message = ToolMessage(content=str(response), name=tool_call['name'])
+            
+    #         # Return the new state replacing the old messages with the function message
+    #         return {"messages": [function_message]}
+    #     else:
+    #         # Handle case where no tool calls are found
+    #         error_message = "No tool calls found in the last message or incorrect message format."
+    #         print(error_message)
+    #         # Return the error message in the state
+    #         return {"messages": [ToolMessage(content=error_message, name="Error")]}
+
     def function_2(self, state):
         messages = state['messages']
-        last_message = messages[-1]  # Retrieve the last message which should have the tool call details
+        last_message = messages[-1]  # this has the query we need to send to the tool provided by the agent
 
-        # Verify that the last message has tool calls and select the last one
-        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
-            tool_call = last_message.tool_calls[-1]
+        # Assuming last_message.tool_calls[-1] contains the recent tool call information
+        tool_call = last_message.tool_calls[-1]
 
-            # Print the tool call details for debugging
-            print(f"Tool Call Details: {tool_call}")
+        # You must ensure that tool_call['id'] is accessible and correct
+        tool_call_id = tool_call['id']  # This must match the 'id' field in the tool call
 
-            # Prepare the message for invocation according to expected Ollama format
-            tool_message = [{"role": "system", "content": "Executing tool."},
-                            {"role": "user", "content": f"Please run the tool {tool_call['name']} with parameters {tool_call['args']}."}]
+        # We call the tool_executor and get back a response
+        response = self.llm.invoke(tool_call)
 
-            # Invoke the tool using the formatted message
-            response = self.llm.invoke(tool_message)
+        # Constructing ToolMessage with the required 'tool_call_id' field
+        function_message = ToolMessage(content=str(response), name=tool_call['name'], tool_call_id=tool_call_id)
 
-            # Print the response from the tool execution for debugging
-            print(f"Response from tool execution: {response}")
-
-            # Create a FunctionMessage with the response
-            function_message = ToolMessage(content=str(response), name=tool_call['name'])
-            
-            # Return the new state replacing the old messages with the function message
-            return {"messages": [function_message]}
-        else:
-            # Handle case where no tool calls are found
-            error_message = "No tool calls found in the last message or incorrect message format."
-            print(error_message)
-            # Return the error message in the state
-            return {"messages": [ToolMessage(content=error_message, name="Error")]}
+        # We return a list, because this will get added to the existing list
+        return {"messages": [function_message]}
 
     # def function_3(self, state):
     #     messages = state['messages']
