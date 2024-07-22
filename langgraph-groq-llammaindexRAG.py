@@ -157,21 +157,54 @@ class Pipeline:
     #     state['messages'].append(weather_data)
     #     return state
 
+    # def function_2(self, state):
+    #     messages = state['messages']
+    #     last_message = messages[-1] # this has the query we need to send to the tool provided by the agent
+
+    #     # Get the last tool call which will contain the response
+    #     tool_call = last_message.tool_calls
+     
+    #     # We call the tool_executor and get back a response
+    #     response = self.llm.invoke(tool_call)
+
+    #     # We use the response to create a FunctionMessage
+    #     function_message = FunctionMessage(content=str(response), name=tool_call.name)
+
+    #     # We return a list, because this will get added to the existing list
+    #     return {"messages": [function_message]}
+    
     def function_2(self, state):
         messages = state['messages']
-        last_message = messages[-1] # this has the query we need to send to the tool provided by the agent
+        last_message = messages[-1]  # Retrieve the last message which should have the tool call details
 
-        # Get the last tool call which will contain the response
-        tool_call = last_message.tool_calls
-     
-        # We call the tool_executor and get back a response
-        response = self.llm.invoke(tool_call)
+        # Verify that the last message has tool calls and select the last one
+        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+            tool_call = last_message.tool_calls[-1]
 
-        # We use the response to create a FunctionMessage
-        function_message = FunctionMessage(content=str(response), name=tool_call.name)
+            # Print the tool call details for debugging
+            print(f"Tool Call Details: {tool_call}")
 
-        # We return a list, because this will get added to the existing list
-        return {"messages": [function_message]}
+            # Prepare the message for invocation according to expected Ollama format
+            tool_message = [{"role": "system", "content": "Executing tool."},
+                            {"role": "user", "content": f"Please run the tool {tool_call['name']} with parameters {tool_call['args']}."}]
+
+            # Invoke the tool using the formatted message
+            response = self.llm.invoke(tool_message)
+
+            # Print the response from the tool execution for debugging
+            print(f"Response from tool execution: {response}")
+
+            # Create a FunctionMessage with the response
+            function_message = FunctionMessage(content=str(response), name=tool_call['name'])
+            
+            # Return the new state replacing the old messages with the function message
+            return {"messages": [function_message]}
+        else:
+            # Handle case where no tool calls are found
+            error_message = "No tool calls found in the last message or incorrect message format."
+            print(error_message)
+            # Return the error message in the state
+            return {"messages": [FunctionMessage(content=error_message, name="Error")]}
 
     # def function_3(self, state):
     #     messages = state['messages']
