@@ -253,7 +253,7 @@ class Pipeline:
         # if "function_call" in last_message.additional_kwargs:
         #     return "continue"
                 # Check if the last message is an AIMessage and has tool calls
-        if isinstance(last_message, AIMessage) and last_message.tool_calls:
+        if last_message.tool_calls:
             return "continue"
         else:
             return "end"
