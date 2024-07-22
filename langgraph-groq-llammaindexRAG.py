@@ -191,7 +191,7 @@ class Pipeline:
                             {"role": "user", "content": f"Please run the tool {tool_call['name']} with parameters {tool_call['args']}."}]
 
             # Invoke the tool using the formatted message
-            response = self.llm.invoke(tool_message)
+            response = self.llm.invoke(tool_call)
 
             # Print the response from the tool execution for debugging
             print(f"Response from tool execution: {response}")
