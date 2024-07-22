@@ -72,7 +72,7 @@ class Pipeline:
        # self.functions = [convert_to_ollama_tool(t) for t in self.tools]
         self.llm = self.llm.bind_tools(self.tools)
 
-        #self.tool_executor = ToolExecutor(self.tools)
+        self.tool_executor = ToolExecutor(self.tools)
 
 
         # Define a LangChain graph
@@ -156,48 +156,14 @@ class Pipeline:
         last_message = messages[-1]
         
         # Debugging: Print last_message to verify it contains what's expected
-        print(f"Last Message: {last_message}")
+        print(f"Calling function 1. Last Message: {last_message}")
 
-        # Check and parse the last_message appropriately before invoking
-        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
-            tool_call = last_message.tool_calls[-1]
-            tool_call_details = f"Name: {tool_call['name']}, Args: {tool_call['args']}"
-            
-            # Debugging: Print details of the tool being called
-            print(f"Preparing to invoke tool with details: {tool_call_details}")
-            
-            # Properly format or structure the input for invocation
-            # Assuming the invoke method might need a structured input
-            structured_input = {
-                "name": tool_call['name'],
-                "args": tool_call['args']
-            }
-
-            # Debugging: Print the structured input
-            print(f"Structured Input for LLM: {structured_input}")
-            
-            try:
-                # Invoke the tool and catch any errors during invocation
-                response = self.llm.invoke(structured_input)
-                print(f"Response from LLM: {response}")
-            except Exception as e:
-                print(f"Error during tool invocation: {e}")
-                response = f"Failed to invoke tool due to error: {e}"
-
-
-            # Constructing AIMessage
-            ai_message = AIMessage(content=str(response))            
-            # Return the new state replacing the old messages with the function message
-            return {"messages": [ai_message]}
-
-        else:
-            # Handle case where no tool calls are available
-            print("No tool calls found in the last message.")
-            response = self.llm.invoke(messages)
-            # Constructing AIMessage
-            ai_message = AIMessage(content=str(response))            
-            # Return the new state replacing the old messages with the function message
-            return {"messages": [ai_message]}
+        response = self.llm.invoke(messages)
+        print(f"Response from function 1: {response}")
+        # Constructing AIMessage
+        #ai_message = AIMessage(content=str(response))            
+        # Return the new state replacing the old messages with the function message
+        return {"messages": [response]}
 
 
     # def function_2(self, state):
@@ -223,10 +189,19 @@ class Pipeline:
             # Example: Pass a string or construct a suitable object as required by your llm.invoke method
             tool_name = tool_call['name']
             tool_args = tool_call['args']
+            
             prompt = f"Run tool {tool_name} with arguments {tool_args}"  # Adjust format as needed
+            print(f"Test prompt for tool: {prompt}")
 
-            # Invoke the tool using the formatted message
-            response = self.llm.invoke(prompt)
+
+            # We construct an ToolInvocation from the function_call and pass in the tool name and the expected str input for OpenWeatherMap tool
+            action = ToolInvocation(
+                tool=tool_name,
+                tool_input=tool_args,
+            )
+
+            # We call the tool_executor and get back a response
+            response = self.tool_executor.invoke(action)
 
             # Print the response from the tool execution for debugging
             print(f"Response from tool execution: {response}")
@@ -249,13 +224,15 @@ class Pipeline:
     def where_to_go(self, state):
         messages = state['messages']
         last_message = messages[-1]
-        
+        print(f"Calling where to GO w last message: {last_message}")
         # if "function_call" in last_message.additional_kwargs:
         #     return "continue"
                 # Check if the last message is an AIMessage and has tool calls
         if last_message.tool_calls:
+            print(f"CONTINUING")
             return "continue"
         else:
+            print(f"END")
             return "end"
 
     def prepare_pipeline_input(self, messages):
