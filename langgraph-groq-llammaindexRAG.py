@@ -179,7 +179,7 @@ class Pipeline:
         if not isinstance(response_content, str):
             response_content = str(response_content)
 
-        return {"messages": [AIMessage(content=response_content)]}
+        return {"messages": [response_content]}
 
     # def function_2(self, state):
     #     messages = state['messages']
