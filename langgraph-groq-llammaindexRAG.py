@@ -16,7 +16,7 @@ from langgraph.graph import Graph, StateGraph, END
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
-from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, FunctionMessage, AIMessage
+from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage, AIMessage
 from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
 import json
@@ -195,7 +195,7 @@ class Pipeline:
             print(f"Response from tool execution: {response}")
 
             # Create a FunctionMessage with the response
-            function_message = FunctionMessage(content=str(response), name=tool_call['name'])
+            function_message = ToolMessage(content=str(response), name=tool_call['name'])
             
             # Return the new state replacing the old messages with the function message
             return {"messages": [function_message]}
@@ -204,7 +204,7 @@ class Pipeline:
             error_message = "No tool calls found in the last message or incorrect message format."
             print(error_message)
             # Return the error message in the state
-            return {"messages": [FunctionMessage(content=error_message, name="Error")]}
+            return {"messages": [ToolMessage(content=error_message, name="Error")]}
 
     # def function_3(self, state):
     #     messages = state['messages']
