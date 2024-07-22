@@ -158,19 +158,28 @@ class Pipeline:
         # Debugging: Log details about the last message
         print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {last_message.content}")
 
+        # Initialize a default response content
+        response_content = "No response generated."
+
         # Handle messages based on type
         if isinstance(last_message, ToolMessage):
-            # If the last message is from a tool, maybe format it or just forward it
-            response_content = f"Here's the updated information: {last_message.content}"
+            # If the last message is from a tool, format or forward its content
+            response_content = f"Updated information: {last_message.content}"
         elif isinstance(last_message, HumanMessage):
             # Process normally as user query
-            response_content = self.llm.invoke(messages)
+            response = self.llm.invoke([last_message.content])
+            response_content = response if isinstance(response, str) else "Failed to generate response."
         else:
-            # Default case or log an error/unknown type
-            response_content = "Sorry, I couldn't process your request right now."
+            # Default case for unhandled message types
+            response_content = "Unhandled message type received."
 
         # Log the response for debugging
-        print(f"Response from function 1: {response_content}")       
+        print(f"Response from function 1: {response_content}")
+
+        # Make sure response_content is a string
+        if not isinstance(response_content, str):
+            response_content = str(response_content)
+
         return {"messages": [AIMessage(content=response_content)]}
 
     # def function_2(self, state):
