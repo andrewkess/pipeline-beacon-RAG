@@ -146,10 +146,10 @@ class Pipeline:
 
         response = self.llm.invoke(messages)
         print(f"Response from function 1: {response}")       
-        ai_message = AIMessage(content=str(response))
+        # ai_message = AIMessage(content=str(response))
 
         # Return the new state replacing the old messages with the function message
-        return {"messages": [ai_message]}
+        return {"messages": [response]}
 
 
     # def function_2(self, state):
