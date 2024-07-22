@@ -189,7 +189,7 @@ class Pipeline:
         else:
             # Handle case where no tool calls are available
             print("No tool calls found in the last message.")
-            response = self.llm.invoke(structured_input)
+            response = self.llm.invoke(messages)
             return {"messages": [response]}
 
     # def function_2(self, state):
