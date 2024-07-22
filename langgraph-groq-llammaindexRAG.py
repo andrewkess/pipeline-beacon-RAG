@@ -190,8 +190,8 @@ class Pipeline:
             print(f"Response from tool execution: {response}")
 
             # Constructing ToolMessage with the required 'tool_call_id' field
-            #function_message = ToolMessage(content=str(response), name=tool_name, tool_call_id=tool_call_id)
-            function_message = FunctionMessage(content=str(response), name=action.tool)
+            function_message = ToolMessage(content=str(response), name=tool_name, tool_call_id=tool_call_id)
+            #function_message = FunctionMessage(content=str(response), name=action.tool)
 
             # Return the new state replacing the old messages with the function message
             return {"messages": [function_message]}
