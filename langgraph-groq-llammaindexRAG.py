@@ -142,6 +142,7 @@ class Pipeline:
         
         # Debugging: Print last_message to verify it contains what's expected
         print(f"Calling function 1. Last Message: {last_message}")
+        print(f"Current Messages: {messages}")
 
         response = self.llm.invoke(messages)
         print(f"Response from function 1: {response}")       
