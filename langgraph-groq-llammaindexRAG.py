@@ -16,7 +16,7 @@ from langgraph.graph import Graph, StateGraph, END
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
-from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage, AIMessage
+from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage, AIMessage, FunctionMessage
 from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
 import json
@@ -135,21 +135,6 @@ class Pipeline:
         pass
 
 
-    # def function_1_using_openai(self, state):
-    #     messages = state['messages']
-    #     user_input = messages[-1]
-    #     complete_query = "Your task is to provide only the city name based on the user query. \
-    #                     Nothing more, just the city name mentioned. Following is the user query: " + user_input
-    #     response = self.openai_model.invoke(complete_query)
-    #     state['messages'].append(response.content) # appending AIMessage response to the AgentState
-    #     return state
-    
-    # def function_1(self, state):
-    #     messages = state['messages']
-    #     response = self.llm.invoke(messages)
-    #     print(f"Response from LLM: {response}")
-    #     return {"messages": [response]}    
-
     def function_1(self, state):
         messages = state['messages']
         # Assuming messages[-1] should contain the necessary information
@@ -205,8 +190,9 @@ class Pipeline:
             print(f"Response from tool execution: {response}")
 
             # Constructing ToolMessage with the required 'tool_call_id' field
-            function_message = ToolMessage(content=str(response), name=tool_name, tool_call_id=tool_call_id)
-            
+            #function_message = ToolMessage(content=str(response), name=tool_name, tool_call_id=tool_call_id)
+            function_message = FunctionMessage(content=str(response), name=action.tool)
+
             # Return the new state replacing the old messages with the function message
             return {"messages": [function_message]}
 
