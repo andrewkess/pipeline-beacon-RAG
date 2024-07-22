@@ -159,11 +159,9 @@ class Pipeline:
         print(f"Calling function 1. Last Message: {last_message}")
 
         response = self.llm.invoke(messages)
-        print(f"Response from function 1: {response}")
-        # Constructing AIMessage
-        ai_message = AIMessage(content=str(response))            
+        print(f"Response from function 1: {response}")       
         # Return the new state replacing the old messages with the function message
-        return {"messages": [ai_message]}
+        return {"messages": [response]}
 
 
     # def function_2(self, state):
@@ -288,31 +286,3 @@ class Pipeline:
         last_message = output['messages'][-1].content if output['messages'] else "No AI message response found from pipeline"
 
         return last_message
-
-        # # Initialize a variable to hold the last AI response
-        # last_ai_response = None
-
-        # # Initialize a variable to hold the AI response
-        # ai_response = None
-
-        # # Check if 'messages' key exists and iterate over messages
-        # if 'messages' in output:
-        #     for message in output['messages']:
-        #         # Check if the message is an AIMessage
-        #         if isinstance(message, AIMessage):
-        #             ai_response = message.content
-        #             # break  # Assuming you only need the first AIMessage content
-
-        # # Return the AI response or a default message if no AIMessage was found
-        # return ai_response if ai_response else "No AI response found"
-
-
-        # # Check if 'messages' key exists and iterate over messages
-        # if 'messages' in output:
-        #     for message in output['messages']:
-        #         # Assuming 'type' in message dict helps identify AIMessage
-        #         if message.get('type') == 'AIMessage':
-        #             last_ai_response = message['content']
-
-        # # Return the last AI response or a default message if no AIMessage was found
-        # return last_ai_response if last_ai_response else "No AI response found"
