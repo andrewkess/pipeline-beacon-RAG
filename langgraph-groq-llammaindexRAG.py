@@ -167,8 +167,7 @@ class Pipeline:
             response_content = f"Updated information: {last_message.content}"
         elif isinstance(last_message, HumanMessage):
             # Process normally as user query
-            response = self.llm.invoke(messages)
-            response_content = response if isinstance(response, str) else "Failed to generate response."
+            response_content = self.llm.invoke(messages)
         else:
             # Default case for unhandled message types
             response_content = "Unhandled message type received."
