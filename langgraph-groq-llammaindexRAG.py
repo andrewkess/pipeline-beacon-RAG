@@ -207,6 +207,7 @@ class Pipeline:
         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
             tool_call = last_message.tool_calls[-1]
             tool_call_id = tool_call['id']  # Ensure the 'id' field is accessible and correct
+            tool_call.pop('run_manager', None)  # Remove the run_manager if present
 
             # Print the tool call details for debugging
             print(f"Tool Call Details: {tool_call}")
