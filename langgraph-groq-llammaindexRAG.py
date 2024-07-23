@@ -193,25 +193,6 @@ class Pipeline:
             # response_content = self.llm.invoke(messages)
             # response_content = AIMessage(content=str(response_content))
 
-        # Check if the last message is a ToolMessage and handle it
-        if isinstance(last_message, ToolMessage):
-            print(f"Current Messages before appending: {messages}")
-            
-            # Find the last human message in the history
-            last_human_message = next((msg for msg in reversed(messages) if not isinstance(msg, ToolMessage)), None)
-            
-            # Formulate a new prompt for the LLM to synthesize an answer
-            if last_human_message:
-                new_prompt = f"Given the query: '{last_human_message.content}' and the results: '{last_message.content}', synthesize a comprehensive response."
-                print(f"New Prompt for LLM: {new_prompt}")
-                
-                # Invoke the LLM with the new prompt
-                response_content = self.llm_notools.invoke([new_prompt])  # Assuming `invoke` method can take a list of prompts
-            else:
-                response_content = "No human message found prior to the tool message."
-
-
-
         else:
             # If not, invoke the LLM or handle other message types
             response_content = self.llm.invoke(messages)
@@ -228,6 +209,14 @@ class Pipeline:
         # Verify that the last message has tool calls and select the last one
         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
             tool_call = last_message.tool_calls[-1]
+
+            print(f"Messages before popping: {messages}")
+            # TO DO: Delete the last message from the current state
+            last_message = messages.pop()  # Remove and retrieve the last message
+            print(f"Messages after popping: {messages}")
+
+
+
             tool_call_id = tool_call['id']  # Ensure the 'id' field is accessible and correct
             # tool_call.pop('run_manager', None)  # Remove the run_manager if present
 
@@ -258,7 +247,7 @@ class Pipeline:
             # Constructing ToolMessage with the required 'tool_call_id' field
             # function_message = AIMessage(content=str(response))
 
-            function_message = ToolMessage(content=str(response), name=action.tool, tool_call_id=tool_call_id)
+            function_message = ToolMessage(content=str(response), tool_call_id=tool_call_id)
             #function_message = FunctionMessage(content=str(response), name=action.tool)
 
             # Return the new state adding function message to messages list
