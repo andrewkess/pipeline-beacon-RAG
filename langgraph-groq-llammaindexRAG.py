@@ -173,6 +173,8 @@ class Pipeline:
         print(f"Initial and current Messages at start and each time function1 is called: {messages}")
 
         last_message = messages[-1]
+        systemPrompt = messages[0].content
+
 
         print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {getattr(last_message, 'content', 'No Content')}")
 
@@ -199,8 +201,9 @@ class Pipeline:
             # # Format the messages for the prompt
             # formatted_prompt = synthesis_prompt.format_messages(details=last_message.content)
             # new_messages = {"messages": [HumanMessage(content="Please sythnesize that answer.")]}
+
             new_messages = [
-                SystemMessage(content=str("You are a helpful assistant.")),
+                SystemMessage(content=systemPrompt),
                 HumanMessage(content=human_content),
                 AIMessage(content=tool_response),
                 HumanMessage(content="Using ONLY the information you provided in your previous message, re-answer my initial question with precision. Do not use a tool."),
