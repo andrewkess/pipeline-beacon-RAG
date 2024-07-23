@@ -206,7 +206,7 @@ class Pipeline:
                 SystemMessage(content=systemPrompt),
                 HumanMessage(content=human_content),
                 AIMessage(content=tool_response),
-                HumanMessage(content="Using ONLY the information you provided in your previous message, re-answer my initial question with precision. Do not use a tool."),
+                HumanMessage(content="Using the information provided in your previous message, please re-answer my initial question. Do not use a tool."),
                 ]
             print(f"New prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
