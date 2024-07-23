@@ -169,31 +169,20 @@ class Pipeline:
     
     def function_1(self, state):
         messages = state['messages']
+        print(f"Initial and current Messages at start and each time function1 is called: {messages}")
+
         last_message = messages[-1]
 
         print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {getattr(last_message, 'content', 'No Content')}")
 
         # Check if the last message is a ToolMessage and handle it
-        if isinstance(last_message, ToolMessage):
+        if isinstance(last_message, AIMessage):
             # Process the tool message content
             # tool_response = AIMessage(content=str(last_message.content))
             print(f"Current Messages before appending: {messages}")
             # messages.append(tool_response)  # Add tool response to the context
             # print(f"Current Messages after appending: {messages}")
 
-            # Deserialize JSON content safely
-            try:
-                tool_response = json.loads(last_message.content)
-            except json.JSONDecodeError:
-                tool_response = last_message.content  # Keep as is if not JSON
-
-            # Check and serialize content before appending to messages if necessary
-            if isinstance(tool_response, dict):
-                tool_response = json.dumps(tool_response)
-
-            tool_AIresponse = AIMessage(content=tool_response)
-            messages.append(tool_AIresponse)  # Add tool response to the context
-            print(f"Current Messages after appending: {messages}")
 
             # response_content = tool_response
             # Now invoke the LLM with the updated messages list
@@ -244,9 +233,9 @@ class Pipeline:
             print(f"Response from tool execution: {response}")
 
             # Constructing ToolMessage with the required 'tool_call_id' field
-            #function_message = AIMessage(content=str(response))
+            function_message = AIMessage(content=str(response))
 
-            function_message = ToolMessage(content=str(response), tool_call_id=tool_call_id)
+            # function_message = ToolMessage(content=str(response), tool_call_id=tool_call_id)
             #function_message = FunctionMessage(content=str(response), name=action.tool)
 
             # Return the new state adding function message to messages list
