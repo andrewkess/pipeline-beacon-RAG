@@ -192,7 +192,7 @@ class Pipeline:
             
             # response_content = self.llm_notools.invoke(messages)
             test_prompt = 'Synthesize this information: {response_content}'
-            print(f"New prompt being used: {test_prompt}")
+            print(f"New prompt being used : {test_prompt}")
 
             response_content = self.llm.invoke([SystemMessage(content=str(test_prompt))])
             # response_content = AIMessage(content=str(response_content))
