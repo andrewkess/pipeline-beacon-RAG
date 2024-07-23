@@ -168,12 +168,14 @@ class Pipeline:
         if isinstance(last_message, ToolMessage):
             # If it's a ToolMessage, process the content directly or transform it
             response_content = last_message.content  # You might need to transform this if necessary
+            response_content = AIMessage(content=str(response_content))
+
         else:
             # If not, invoke the LLM or handle other message types
             response_content = self.llm.invoke(messages)
 
         print(f"Response from function 1: {response_content}")
-        return {"messages": [AIMessage(content=str(response_content['content']))]}
+        return {"messages": [response_content]}
     
     def function_2(self, state):
         messages = state['messages']
