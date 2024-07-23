@@ -203,7 +203,7 @@ class Pipeline:
                 SystemMessage(content=str("You are a helpful assistant.")),
                 HumanMessage(content=human_content),
                 AIMessage(content=tool_response),
-                HumanMessage(content="Please sythnesize. Do not call a new tool. Just provide a more concise and relevent reply taking into account the information we just shared."),
+                HumanMessage(content="Please sythnesize your previous answer. Do not call a new tool. Just provide a more concise and relevent reply."),
                 ]
             print(f"New prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
@@ -217,7 +217,7 @@ class Pipeline:
             # print(f"New prompt being used : {test_prompt}")
 
             # response_content = self.llm.invoke([SystemMessage(content=str(test_prompt))])
-            response_content = AIMessage(content=str(response_content))
+            # response_content = AIMessage(content=str(response_content))
 
 
 
