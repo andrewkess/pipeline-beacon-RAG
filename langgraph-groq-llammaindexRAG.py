@@ -176,14 +176,16 @@ class Pipeline:
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
             # Process the tool message content
-            tool_response = AIMessage(content=str(last_message.content))
-            print(f"Current Messages before appending: {messages}")
-            messages.append(tool_response)  # Add tool response to the context
-            print(f"Current Messages after appending: {messages}")
+            # tool_response = AIMessage(content=str(last_message.content))
+            # print(f"Current Messages before appending: {messages}")
+            # messages.append(tool_response)  # Add tool response to the context
+            # print(f"Current Messages after appending: {messages}")
+
+            print(f"Current Messages before sythnesizing tool message: {messages}")
 
             # response_content = tool_response
             # Now invoke the LLM with the updated messages list
-            response_content = self.llm_notools.invoke(tool_response)
+            response_content = self.llm_notools.invoke(messages)
             # response_content = self.llm.invoke(messages)
 
         else:
