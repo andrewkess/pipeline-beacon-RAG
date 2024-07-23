@@ -203,7 +203,7 @@ class Pipeline:
 
             response_content = self.llm_notools.invoke(messages)
             # response_content = self.llm.invoke(messages)
-            response_content = AIMessage(content=str(response_content))
+            # response_content = AIMessage(content=str(response_content))
 
 
         else:
