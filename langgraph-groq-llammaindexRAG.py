@@ -166,9 +166,11 @@ class Pipeline:
 
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
-            # If it's a ToolMessage, process the content directly or transform it
-            response_content = last_message.content  # You might need to transform this if necessary
-            response_content = AIMessage(content=str(response_content))
+            # Process the tool message content
+            tool_response = AIMessage(content=str(last_message.content))
+            messages.append(tool_response)  # Add tool response to the context
+            # Now invoke the LLM with the updated messages list
+            response_content = self.llm.invoke(messages)
 
         else:
             # If not, invoke the LLM or handle other message types
