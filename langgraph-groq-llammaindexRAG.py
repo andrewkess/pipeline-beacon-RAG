@@ -187,14 +187,36 @@ class Pipeline:
             # response_content = tool_response
             # Now invoke the LLM with the updated messages list
 
+            # TO DO: add a new prompt that takes the last human message (which represents the original query) and the content from the last message (which represents the results of calling the tool and getting back the result)
+            # and asks as a system prompt to synthesize the answer given the provided information 
             response_content = self.llm_notools.invoke(messages)
             # response_content = self.llm.invoke(messages)
             # response_content = AIMessage(content=str(response_content))
+
+        # Check if the last message is a ToolMessage and handle it
+        if isinstance(last_message, ToolMessage):
+            print(f"Current Messages before appending: {messages}")
+            
+            # Find the last human message in the history
+            last_human_message = next((msg for msg in reversed(messages) if not isinstance(msg, ToolMessage)), None)
+            
+            # Formulate a new prompt for the LLM to synthesize an answer
+            if last_human_message:
+                new_prompt = f"Given the query: '{last_human_message.content}' and the results: '{last_message.content}', synthesize a comprehensive response."
+                print(f"New Prompt for LLM: {new_prompt}")
+                
+                # Invoke the LLM with the new prompt
+                response_content = self.llm_notools.invoke([new_prompt])  # Assuming `invoke` method can take a list of prompts
+            else:
+                response_content = "No human message found prior to the tool message."
+
 
 
         else:
             # If not, invoke the LLM or handle other message types
             response_content = self.llm.invoke(messages)
+            # response_content = AIMessage(content=str(response_content.content), )
+
 
         print(f"Response from function 1: {response_content}")
         return {"messages": [response_content]}
@@ -207,7 +229,7 @@ class Pipeline:
         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
             tool_call = last_message.tool_calls[-1]
             tool_call_id = tool_call['id']  # Ensure the 'id' field is accessible and correct
-            tool_call.pop('run_manager', None)  # Remove the run_manager if present
+            # tool_call.pop('run_manager', None)  # Remove the run_manager if present
 
             # Print the tool call details for debugging
             print(f"Tool Call Details: {tool_call}")
