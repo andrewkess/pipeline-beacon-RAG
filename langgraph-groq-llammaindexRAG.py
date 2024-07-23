@@ -63,7 +63,8 @@ class Pipeline:
         self.llm = OllamaFunctions(
                     model=self.valves.LLAMAINDEX_MODEL_NAME,
                     base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
-                    format="json"  # Ensure JSON format is used for tool integration
+                    format="json",  # Ensure JSON format is used for tool integration
+                    temperature=0
                 )
 
         #self.weather = OpenWeatherMapAPIWrapper()
@@ -135,21 +136,21 @@ class Pipeline:
         pass
 
 
-    def function_1(self, state):
-        messages = state['messages']
-        # Assuming messages[-1] should contain the necessary information
-        last_message = messages[-1]
+    # def function_1(self, state):
+    #     messages = state['messages']
+    #     # Assuming messages[-1] should contain the necessary information
+    #     last_message = messages[-1]
         
-        # Debugging: Log details about the last message
-        print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {last_message.content}")
-        print(f"Current Messages: {messages}")
+    #     # Debugging: Log details about the last message
+    #     print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {last_message.content}")
+    #     print(f"Current Messages: {messages}")
 
-        response = self.llm.invoke(messages)
-        print(f"Response from function 1: {response}")       
-        # ai_message = AIMessage(content=str(response))
+    #     response = self.llm.invoke(messages)
+    #     print(f"Response from function 1: {response}")       
+    #     # ai_message = AIMessage(content=str(response))
 
-        # Return the new state replacing the old messages with the function message
-        return {"messages": [response]}
+    #     # Return the new state replacing the old messages with the function message
+    #     return {"messages": [response]}
 
     # def function_2(self, state):
     #     messages = state['messages']
@@ -157,7 +158,23 @@ class Pipeline:
     #     weather_data = self.weather.run(agent_response)
     #     state['messages'].append(weather_data)
     #     return state
+    def function_1(self, state):
+        messages = state['messages']
+        last_message = messages[-1]
 
+        print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {getattr(last_message, 'content', 'No Content')}")
+
+        # Check if the last message is a ToolMessage and handle it
+        if isinstance(last_message, ToolMessage):
+            # If it's a ToolMessage, process the content directly or transform it
+            response_content = last_message.content  # You might need to transform this if necessary
+        else:
+            # If not, invoke the LLM or handle other message types
+            response_content = self.llm.invoke(messages)
+
+        print(f"Response from function 1: {response_content}")
+        return {"messages": [AIMessage(content=response_content)]}
+    
     def function_2(self, state):
         messages = state['messages']
         last_message = messages[-1]  # Retrieve the last message which should have the tool call details
