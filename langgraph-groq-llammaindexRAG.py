@@ -182,6 +182,7 @@ class Pipeline:
             # Find the last HumanMessage from the message history
             last_human_message = next((m for m in reversed(messages) if isinstance(m, HumanMessage)), None)
             human_content = last_human_message.content if last_human_message else "No previous human message found."
+            print(f"Human content: {human_content}")
 
             # Process the tool message content
             tool_response = last_message.content
@@ -200,8 +201,9 @@ class Pipeline:
 
             new_messages = [
                 SystemMessage(content=str("You are a helpful assistant that can synthesize data and provide a final answer")),
-                AIMessage(content=last_message.content),
                 HumanMessage(content=human_content),
+                AIMessage(content=tool_response),
+                HumanMessage(content="Please answer my previous question by taking into account that information."),
                 ]
             print(f"New prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
