@@ -198,16 +198,16 @@ class Pipeline:
 
             # # Format the messages for the prompt
             # formatted_prompt = synthesis_prompt.format_messages(details=last_message.content)
-            new_messages = {"messages": [HumanMessage(content="Please sythnesize that answer.")]}
-            # new_messages = [
-            #     SystemMessage(content=str("You are a helpful assistant that can synthesize data and provide a final answer")),
-            #     HumanMessage(content=human_content),
-            #     AIMessage(content=tool_response),
-            #     HumanMessage(content="Please sythnesize that answer."),
-            #     ]
+            # new_messages = {"messages": [HumanMessage(content="Please sythnesize that answer.")]}
+            new_messages = [
+                SystemMessage(content=str("You are a helpful assistant that can synthesize data and provide a final answer")),
+                HumanMessage(content=human_content),
+                AIMessage(content=tool_response),
+                HumanMessage(content="Please sythnesize that answer to directly address my previous question."),
+                ]
             print(f"New prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
-            response_content = self.llm.invoke(new_messages)
+            response_content = self.llm_notools.invoke(new_messages)
             
 
 
