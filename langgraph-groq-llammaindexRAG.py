@@ -192,7 +192,7 @@ class Pipeline:
             
             # response_content = tool_response
             # Now invoke the LLM with the updated messages list
-            response_content = self.llm_notools.invoke(messages)
+            # response_content = self.llm_notools.invoke(messages)
 
 
             # Process the tool message content safely for serialization
