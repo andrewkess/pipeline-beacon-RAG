@@ -135,51 +135,21 @@ class Pipeline:
         pass
 
 
-    # def function_1(self, state):
-    #     messages = state['messages']
-    #     # Assuming messages[-1] should contain the necessary information
-    #     last_message = messages[-1]
-        
-    #     # Debugging: Print last_message to verify it contains what's expected
-    #     print(f"Calling function 1. Last Message: {last_message}")
-    #     print(f"Current Messages: {messages}")
-
-    #     response = self.llm.invoke(messages)
-    #     print(f"Response from function 1: {response}")       
-    #     # ai_message = AIMessage(content=str(response))
-
-    #     # Return the new state replacing the old messages with the function message
-    #     return {"messages": [response]}
-
     def function_1(self, state):
         messages = state['messages']
+        # Assuming messages[-1] should contain the necessary information
         last_message = messages[-1]
-
+        
         # Debugging: Log details about the last message
         print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {last_message.content}")
+        print(f"Current Messages: {messages}")
 
-        # Initialize a default response content
-        response_content = "No response generated."
+        response = self.llm.invoke(messages)
+        print(f"Response from function 1: {response}")       
+        # ai_message = AIMessage(content=str(response))
 
-        # Handle messages based on type
-        if isinstance(last_message, ToolMessage):
-            # If the last message is from a tool, format or forward its content
-            response_content = f"Updated information: {last_message.content}"
-        elif isinstance(last_message, HumanMessage):
-            # Process normally as user query
-            response_content = self.llm.invoke(messages)
-        else:
-            # Default case for unhandled message types
-            response_content = "Unhandled message type received."
-
-        # Log the response for debugging
-        print(f"Response from function 1: {response_content}")
-
-        # Make sure response_content is a string
-        if not isinstance(response_content, str):
-            response_content = str(response_content)
-
-        return {"messages": [response_content]}
+        # Return the new state replacing the old messages with the function message
+        return {"messages": [response]}
 
     # def function_2(self, state):
     #     messages = state['messages']
