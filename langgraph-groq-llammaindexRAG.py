@@ -179,26 +179,30 @@ class Pipeline:
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
             # Process the tool message content
-            tool_response = AIMessage(content=str(last_message.content))
-            print(f"Current Messages before appending: {messages}")
+            tool_response = last_message.content
+            print(f"Current Messages during 2nd call: {messages}")
             # messages.append(tool_response)  # Add tool response to the context
             # print(f"Current Messages after appending: {messages}")
-            response_content = tool_response
+            
+            #     # Construct a prompt template that asks the LLM to synthesize the conversation
+            # synthesis_prompt = ChatPromptTemplate.from_messages([
+            #     ("system", "Synthesize the conversation based on the following details: {details}"),
+            #     ("human", last_message.content)
+            # ])
 
+            # # Format the messages for the prompt
+            # formatted_prompt = synthesis_prompt.format_messages(details=last_message.content)
 
-
-                # Construct a prompt template that asks the LLM to synthesize the conversation
-            synthesis_prompt = ChatPromptTemplate.from_messages([
-                ("system", "Synthesize the conversation based on the following details: {details}"),
-                ("human", last_message.content)
-            ])
-
-            # Format the messages for the prompt
-            formatted_prompt = synthesis_prompt.format_messages(details=last_message.content)
-
+            new_messages = [
+                SystemMessage(content=str("You are a helpful assistant that can synthesize data and provide a final answer")),
+                HumanMessage(content="Use a tool to find what is the weather in Rome?"),
+                AIMessage(content=last_message.content),
+                HumanMessage(content="Now please provide a clear answer."),
+                ]
+            print(f"New prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
-            response_content = self.llm.invoke(formatted_prompt)
-            print(f"New prompt being used: {formatted_prompt}")
+            response_content = self.llm.invoke(new_messages)
+            
 
 
 
