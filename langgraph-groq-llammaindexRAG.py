@@ -200,9 +200,7 @@ class Pipeline:
             # formatted_prompt = synthesis_prompt.format_messages(details=last_message.content)
 
             new_messages = [
-                SystemMessage(content=str("You are a helpful assistant that can synthesize data and provide a final answer")),
-                HumanMessage(content=human_content),
-                AIMessage(content=tool_response),
+                messages,
                 HumanMessage(content="Please sythnesize that answer."),
                 ]
             print(f"New prompt being used: {new_messages}")
