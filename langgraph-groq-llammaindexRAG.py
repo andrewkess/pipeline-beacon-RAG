@@ -181,13 +181,17 @@ class Pipeline:
             # messages.append(tool_response)  # Add tool response to the context
             # print(f"Current Messages after appending: {messages}")
 
-            # Deserializing content if it's a JSON string
+            # Deserialize JSON content safely
             try:
                 tool_response = json.loads(last_message.content)
             except json.JSONDecodeError:
-                tool_response = last_message.content  # Handle non-JSON content
-            tool_AIresponse = AIMessage(content=tool_response)
+                tool_response = last_message.content  # Keep as is if not JSON
 
+            # Check and serialize content before appending to messages if necessary
+            if isinstance(tool_response, dict):
+                tool_response = json.dumps(tool_response)
+
+            tool_AIresponse = AIMessage(content=tool_response)
             messages.append(tool_AIresponse)  # Add tool response to the context
             print(f"Current Messages after appending: {messages}")
 
