@@ -191,7 +191,9 @@ class Pipeline:
             # and asks as a system prompt to synthesize the answer given the provided information 
             
             # response_content = self.llm_notools.invoke(messages)
-            test_prompt = 'Tell me a joke using this information: {response_content}'
+            test_prompt = 'Synthesize this information: {response_content}'
+            print(f"New prompt being used: {test_prompt}")
+
             response_content = self.llm.invoke([SystemMessage(content=str(test_prompt))])
             # response_content = AIMessage(content=str(response_content))
 
