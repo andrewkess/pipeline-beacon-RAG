@@ -166,17 +166,6 @@ class Pipeline:
     #     weather_data = self.weather.run(agent_response)
     #     state['messages'].append(weather_data)
     #     return state
-
-    def serialize_message(self, obj):
-        # """ Custom serializer for messages. """
-        if hasattr(obj, '__dict__'):
-            return {key: self.serialize_message(value) for key, value in obj.__dict__.items()}
-        elif isinstance(obj, list):
-            return [self.serialize_message(item) for item in obj]
-        elif isinstance(obj, dict):
-            return {k: self.serialize_message(v) for k, v in obj.items()}
-        else:
-            return obj  # For basic data types
     
     def function_1(self, state):
         messages = state['messages']
@@ -187,22 +176,13 @@ class Pipeline:
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
             # Process the tool message content
-            # tool_response = AIMessage(content=str(last_message.content))
-            # messages.append(tool_response)  # Add tool response to the context
+            tool_response = AIMessage(content=str(last_message.content))
+            messages.append(tool_response)  # Add tool response to the context
             
             # response_content = tool_response
             # Now invoke the LLM with the updated messages list
             # response_content = self.llm_notools.invoke(messages)
-
-
-            # Process the tool message content safely for serialization
-            safe_content = self.serialize_message(last_message.content)
-            # Append a new AIMessage with safe content
-            tool_response = AIMessage(content=json.dumps(safe_content))
-            messages.append(tool_response)  # Now safe to append since it's serialized
-            
-            # Invoke the LLM with the updated messages list
-            response_content = self.llm_notools.invoke([m.__dict__ for m in messages])  # Ensure messages are serializable
+            response_content = self.llm.invoke(messages)
 
         else:
             # If not, invoke the LLM or handle other message types
