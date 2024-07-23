@@ -178,28 +178,26 @@ class Pipeline:
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
             # Process the tool message content
-            # tool_response = AIMessage(content=str(last_message.content))
+            tool_response = AIMessage(content=str(last_message.content))
             print(f"Current Messages before appending: {messages}")
             # messages.append(tool_response)  # Add tool response to the context
             # print(f"Current Messages after appending: {messages}")
 
 
-            # response_content = tool_response
+            response_content = tool_response
             # Now invoke the LLM with the updated messages list
 
             # TO DO: add a new prompt that takes the last human message (which represents the original query) and the content from the last message (which represents the results of calling the tool and getting back the result)
             # and asks as a system prompt to synthesize the answer given the provided information 
-            response_content = self.llm_notools.invoke(messages)
+            # response_content = self.llm_notools.invoke(messages)
             # response_content = self.llm.invoke(messages)
             # response_content = AIMessage(content=str(response_content))
 
         else:
             # If not, invoke the LLM or handle other message types
             response_content = self.llm.invoke(messages)
-            # response_content = AIMessage(content=str(response_content.content), )
 
-
-        print(f"Response from function 1: {response_content}")
+        print(f"Final response from function 1: {response_content}")
         return {"messages": [response_content]}
     
     def function_2(self, state):
@@ -209,13 +207,6 @@ class Pipeline:
         # Verify that the last message has tool calls and select the last one
         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
             tool_call = last_message.tool_calls[-1]
-
-            print(f"Messages before popping: {messages}")
-            # TO DO: Delete the last message from the current state
-            last_message = messages.pop()  # Remove and retrieve the last message
-            print(f"Messages after popping: {messages}")
-
-
 
             tool_call_id = tool_call['id']  # Ensure the 'id' field is accessible and correct
             # tool_call.pop('run_manager', None)  # Remove the run_manager if present
