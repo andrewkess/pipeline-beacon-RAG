@@ -185,8 +185,8 @@ class Pipeline:
 
             # response_content = tool_response
             # Now invoke the LLM with the updated messages list
-            response_content = self.llm_notools.invoke(messages)
-            # response_content = self.llm.invoke(messages)
+            # response_content = self.llm_notools.invoke(messages)
+            response_content = self.llm.invoke(messages)
 
         else:
             # If not, invoke the LLM or handle other message types
