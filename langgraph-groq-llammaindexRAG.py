@@ -173,7 +173,7 @@ class Pipeline:
             response_content = self.llm.invoke(messages)
 
         print(f"Response from function 1: {response_content}")
-        return {"messages": [AIMessage(content=str(response_content))]}
+        return {"messages": [AIMessage(content=str(response_content['content']))]}
     
     def function_2(self, state):
         messages = state['messages']
