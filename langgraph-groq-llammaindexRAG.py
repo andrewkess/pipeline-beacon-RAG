@@ -186,17 +186,20 @@ class Pipeline:
 
             # Mock state setup for testing
             mockState = {
-                "messages": [
-                    SystemMessage("Today's date is 2024-07-23\n\nUser Context:\n1. [2024-06-23]. User name is Andrew"),
-                    HumanMessage("Provide in-depth analysis of recent policy changes or announcements related to the UN peacekeeping strategies"),
-                    AIMessage("I'm sorry, but I don't have access to specific information about UN peacekeeping strategies. However, I can help you with general weather updates if that's something you're interested in."),
-                    HumanMessage("What's the temperature in Paris?"),
-                    AIMessage("", id="run-c6cf9fbe-c6ba-4c40-a33f-fc3768d673f7-0", tool_calls=[{"name": "open_weather_map", "args": {"location": "Paris, FR"}, "id": "call_a3337e2f684a4335ba586941dd654275", "type": "tool_call"}]),
-                    ToolMessage("In Paris, FR, the current weather is as follows:\nDetailed status: broken clouds\nWind speed: 6.69 m/s, direction: 320°\nHumidity: 56%\nTemperature: \n  - Current: 23.77°C\n  - High: 25.28°C\n  - Low: 22.34°C\n  - Feels like: 23.66°C\nRain: {}\nHeat index: None\nCloud cover: 75%", "open_weather_map", "call_a3337e2f684a4335ba586941dd654275"),
-                    AIMessage("In Paris, FR, the current weather is as follows:\nDetailed status: broken clouds\nWind speed: 6.69 m/s, direction: 320°\nHumidity: 56%\nTemperature: \n  - Current: 23.77°C\n  - High: 25.28°C\n  - Low: 22.34°C\n  - Feels like: 23.66°C\nRain: {}\nHeat index: None\nCloud cover: 75%"),
-                    HumanMessage("So now that you know that, what's the temperature in Paris?"),
-                ]
-            }
+    "messages": [
+        SystemMessage(content="Today's date is 2024-07-23\n\nUser Context:\n1. [2024-06-23]. User name is Andrew"),
+        HumanMessage(content="Provide in-depth analysis of recent policy changes or announcements related to the UN peacekeeping strategies"),
+        AIMessage(content="I'm sorry, but I don't have access to specific information about UN peacekeeping strategies. However, I can help you with general weather updates if that's something you're interested in."),
+        HumanMessage(content="What's the temperature in Paris?"),
+        AIMessage(content="", id="run-c6cf9fbe-c6ba-4c40-a33f-fc3768d673f7-0", tool_calls=[{"name": "open_weather_map", "args": {"location": "Paris, FR"}, "id": "call_a3337e2f684a4335ba586941dd654275", "type": "tool_call"}]),
+        ToolMessage(
+            content="In Paris, FR, the current weather is as follows:\nDetailed status: broken clouds\nWind speed: 6.69 m/s, direction: 320°\nHumidity: 56%\nTemperature: \n  - Current: 23.77°C\n  - High: 25.28°C\n  - Low: 22.34°C\n  - Feels like: 23.66°C\nRain: {}\nHeat index: None\nCloud cover: 75%",
+            tool_call_id="call_a3337e2f684a4335ba586941dd654275"
+        ),
+        AIMessage(content="In Paris, FR, the current weather is as follows:\nDetailed status: broken clouds\nWind speed: 6.69 m/s, direction: 320°\nHumidity: 56%\nTemperature: \n  - Current: 23.77°C\n  - High: 25.28°C\n  - Low: 22.34°C\n  - Feels like: 23.66°C\nRain: {}\nHeat index: None\nCloud cover: 75%"),
+        HumanMessage(content="So now that you know that, what's the temperature in Paris?"),
+    ]
+}
 
             response_content = self.llm_notools.invoke(mockState)
             # response_content = self.llm.invoke(messages)
@@ -246,7 +249,7 @@ class Pipeline:
             # Constructing ToolMessage with the required 'tool_call_id' field
             #function_message = AIMessage(content=str(response))
 
-            function_message = ToolMessage(content=str(response), name=tool_name, tool_call_id=tool_call_id)
+            function_message = ToolMessage(content=str(response), tool_call_id=tool_call_id)
             #function_message = FunctionMessage(content=str(response), name=action.tool)
 
             # Return the new state adding function message to messages list
