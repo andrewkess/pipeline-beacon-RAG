@@ -22,6 +22,7 @@ from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
 import json
 from langgraph.prebuilt import ToolExecutor, ToolInvocation
 from langchain_experimental.llms.ollama_functions import OllamaFunctions
+from langchain_ollama import ChatOllama
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -68,6 +69,13 @@ class Pipeline:
                 )
 
         #self.weather = OpenWeatherMapAPIWrapper()
+
+        self.llm_notools = ChatOllama(
+                    model="llama3",
+                    base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+                    temperature=0,
+                    # other params...
+                )
 
         self.tools = [OpenWeatherMapQueryRun()]
        # self.functions = [convert_to_ollama_tool(t) for t in self.tools]
@@ -167,12 +175,12 @@ class Pipeline:
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
             # Process the tool message content
-            tool_response = AIMessage(content=str(last_message.content))
+            # tool_response = AIMessage(content=str(last_message.content))
             # messages.append(tool_response)  # Add tool response to the context
             
-            response_content = tool_response
+            # response_content = tool_response
             # Now invoke the LLM with the updated messages list
-            # response_content = self.llm.invoke(messages)
+            response_content = self.llm_notools.invoke(messages)
 
         else:
             # If not, invoke the LLM or handle other message types
