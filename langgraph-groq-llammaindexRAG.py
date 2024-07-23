@@ -16,6 +16,7 @@ from langgraph.graph import Graph, StateGraph, END
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage, AIMessage, FunctionMessage
 from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
@@ -182,20 +183,35 @@ class Pipeline:
             print(f"Current Messages before appending: {messages}")
             # messages.append(tool_response)  # Add tool response to the context
             # print(f"Current Messages after appending: {messages}")
-
-
             response_content = tool_response
-            # Now invoke the LLM with the updated messages list
 
-            # TO DO: add a new prompt that takes the last human message (which represents the original query) and the content from the last message (which represents the results of calling the tool and getting back the result)
-            # and asks as a system prompt to synthesize the answer given the provided information 
-            
+
+
+                # Construct a prompt template that asks the LLM to synthesize the conversation
+            synthesis_prompt = ChatPromptTemplate.from_messages([
+                ("system", "Synthesize the conversation based on the following details: {details}"),
+                ("human", last_message.content)
+            ])
+
+            # Format the messages for the prompt
+            formatted_prompt = synthesis_prompt.format_messages(details=last_message.content)
+
+            # Invoke the LLM with the new formatted prompt
+            response_content = self.llm.invoke(formatted_prompt)
+            print(f"New prompt being used: {formatted_prompt}")
+
+
+
             # response_content = self.llm_notools.invoke(messages)
-            test_prompt = 'Synthesize this information: {response_content}'
-            print(f"New prompt being used : {test_prompt}")
+            # test_prompt = 'Synthesize this information: {response_content}'
+            # print(f"New prompt being used : {test_prompt}")
 
-            response_content = self.llm.invoke([SystemMessage(content=str(test_prompt))])
+            # response_content = self.llm.invoke([SystemMessage(content=str(test_prompt))])
             # response_content = AIMessage(content=str(response_content))
+
+
+
+
 
         else:
             # If not, invoke the LLM or handle other message types
