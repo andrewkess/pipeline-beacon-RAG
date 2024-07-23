@@ -189,8 +189,10 @@ class Pipeline:
 
             # TO DO: add a new prompt that takes the last human message (which represents the original query) and the content from the last message (which represents the results of calling the tool and getting back the result)
             # and asks as a system prompt to synthesize the answer given the provided information 
+            
             # response_content = self.llm_notools.invoke(messages)
-            # response_content = self.llm.invoke(messages)
+            test_prompt = 'Tell me a joke using this information: {response_content}'
+            response_content = self.llm.invoke([SystemMessage(content=str(test_prompt))])
             # response_content = AIMessage(content=str(response_content))
 
         else:
