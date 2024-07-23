@@ -176,7 +176,7 @@ class Pipeline:
         print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {getattr(last_message, 'content', 'No Content')}")
 
         # Check if the last message is a ToolMessage and handle it
-        if isinstance(last_message, AIMessage):
+        if isinstance(last_message, ToolMessage):
             # Process the tool message content
             # tool_response = AIMessage(content=str(last_message.content))
             print(f"Current Messages before appending: {messages}")
@@ -234,9 +234,9 @@ class Pipeline:
             print(f"Response from tool execution: {response}")
 
             # Constructing ToolMessage with the required 'tool_call_id' field
-            function_message = AIMessage(content=str(response))
+            # function_message = AIMessage(content=str(response))
 
-            # function_message = ToolMessage(content=str(response), tool_call_id=tool_call_id)
+            function_message = ToolMessage(content=str(response), name=action.tool, tool_call_id=tool_call_id)
             #function_message = FunctionMessage(content=str(response), name=action.tool)
 
             # Return the new state adding function message to messages list
