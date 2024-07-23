@@ -176,8 +176,9 @@ class Pipeline:
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
             # Process the tool message content
-            tool_response = AIMessage(content=str(last_message.content))
             print(f"Current Messages before appending: {messages}")
+            tool_response = AIMessage(content=json.dumps(last_message.content))
+
             messages.append(tool_response)  # Add tool response to the context
             print(f"Current Messages after appending: {messages}")
 
