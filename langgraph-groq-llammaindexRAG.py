@@ -174,9 +174,10 @@ class Pipeline:
 
         last_message = messages[-1]
         systemPrompt = messages[0].content
+        print(f"SYSTEM PROMPT BABY: {systemPrompt}")
 
 
-        print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {getattr(last_message, 'content', 'No Content')}")
+        # print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {getattr(last_message, 'content', 'No Content')}")
 
         # Check if the last message is a ToolMessage and handle it
         if isinstance(last_message, ToolMessage):
@@ -184,7 +185,7 @@ class Pipeline:
             # Find the last HumanMessage from the message history
             last_human_message = next((m for m in reversed(messages) if isinstance(m, HumanMessage)), None)
             human_content = last_human_message.content if last_human_message else "No previous human message found."
-            print(f"Human content: {human_content}")
+            # print(f"Human content: {human_content}")
 
             # Process the tool message content
             tool_response = last_message.content
@@ -206,9 +207,9 @@ class Pipeline:
                 SystemMessage(content=systemPrompt),
                 HumanMessage(content=human_content),
                 AIMessage(content=tool_response),
-                HumanMessage(content="Using the information provided in your previous message, please re-answer my initial question. Do not use a tool."),
+                HumanMessage(content="Using ONLY the information provided in your previous message, please re-answer my initial question. Do NOT use a tool. Do not use a weather tool."),
                 ]
-            print(f"New prompt being used: {new_messages}")
+            print(f"NEW prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
             response_content = self.llm.invoke(new_messages)
             
@@ -252,8 +253,8 @@ class Pipeline:
             tool_name = tool_call['name']
             tool_args = tool_call['args']
             
-            prompt = f"Run tool {tool_name} with arguments {tool_args}"  # Adjust format as needed
-            print(f"Test prompt for tool: {prompt}")
+            # prompt = f"Run tool {tool_name} with arguments {tool_args}"  # Adjust format as needed
+            # print(f"Test prompt for tool: {prompt}")
 
 
             # We construct an ToolInvocation from the function_call and pass in the tool name and the expected str input for OpenWeatherMap tool
@@ -289,7 +290,7 @@ class Pipeline:
     def where_to_go(self, state):
         messages = state['messages']
         last_message = messages[-1]
-        print(f"Calling where to GO w last message: {last_message}")
+        # print(f"Calling where to GO w last message: {last_message}")
         # if "function_call" in last_message.additional_kwargs:
         #     return "continue"
                 # Check if the last message is an AIMessage and has tool calls
