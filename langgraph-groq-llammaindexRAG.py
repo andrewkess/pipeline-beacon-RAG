@@ -216,7 +216,7 @@ class Pipeline:
                 AIMessage(content=tool_response),
                 HumanMessage(content="Using ONLY the information provided in your previous message, please re-answer my initial question. Do NOT use a tool. Do not use a weather tool."),
                 ]
-            # print(f"NEW prompt being used: {new_messages}")
+            print(f"NEW prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
             response_content = self.llm_notools.invoke(new_messages)
             
@@ -357,7 +357,7 @@ class Pipeline:
         inputs = {"messages": self.prepare_pipeline_input(messages)}
 
         output = self.app.invoke(inputs)
-        print(f"FINAL OUTPUT: {output}")
+        # print(f"FINAL OUTPUT: {output}")
 
         # Assuming output always contains a 'messages' list with at least one message
         last_message = output['messages'][-1].content if output['messages'] else "No AI message response found from pipeline"
