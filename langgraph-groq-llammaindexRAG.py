@@ -71,12 +71,18 @@ class Pipeline:
 
         #self.weather = OpenWeatherMapAPIWrapper()
 
-        self.llm_notools = ChatOllama(
-                    model="llama3",
+        # self.llm_notools = ChatOllama(
+        #             model="llama3",
+        #             base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+        #             temperature=0,
+        #             # other params...
+        #         )
+        
+        self.llm_notools = OllamaFunctions(
+                    model=self.valves.LLAMAINDEX_MODEL_NAME,
                     base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
-                    temperature=0,
-                    # other params...
-                )
+                    temperature=0
+        )
 
         self.tools = [OpenWeatherMapQueryRun()]
        # self.functions = [convert_to_ollama_tool(t) for t in self.tools]
@@ -174,6 +180,7 @@ class Pipeline:
 
         last_message = messages[-1]
         systemPrompt = messages[0].content
+        systemPrompt = 'You are a helpful AI Assistant named Beacon. You do not use any tools.'
         # print(f"SYSTEM PROMPT BABY: {systemPrompt}")
 
 
@@ -211,7 +218,7 @@ class Pipeline:
                 ]
             # print(f"NEW prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
-            response_content = self.llm.invoke(new_messages)
+            response_content = self.llm_notools.invoke(new_messages)
             
 
 
