@@ -212,9 +212,9 @@ class Pipeline:
 
             new_messages = [
                 SystemMessage(content=systemPrompt),
-                HumanMessage(content=human_content),
-                AIMessage(content="This is information I was able to retreive using a tool:" + tool_response),
-                HumanMessage(content="Given this information, answer my initial message."),
+                # HumanMessage(content=human_content),
+                AIMessage(content="Here is some real-time information related to your query that I was able to retreive using a tool: " + tool_response),
+                HumanMessage(content="Given this information, please answer my query: " + human_content),
                 ]
             print(f"NEW prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
