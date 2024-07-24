@@ -170,11 +170,11 @@ class Pipeline:
     
     def function_1(self, state):
         messages = state['messages']
-        print(f"Initial and current Messages at start and each time function1 is called: {messages}")
+        # print(f"Initial and current Messages at start and each time function1 is called: {messages}")
 
         last_message = messages[-1]
         systemPrompt = messages[0].content
-        print(f"SYSTEM PROMPT BABY: {systemPrompt}")
+        # print(f"SYSTEM PROMPT BABY: {systemPrompt}")
 
 
         # print(f"Calling function 1. Last Message Type: {type(last_message)} Content: {getattr(last_message, 'content', 'No Content')}")
@@ -209,7 +209,7 @@ class Pipeline:
                 AIMessage(content=tool_response),
                 HumanMessage(content="Using ONLY the information provided in your previous message, please re-answer my initial question. Do NOT use a tool. Do not use a weather tool."),
                 ]
-            print(f"NEW prompt being used: {new_messages}")
+            # print(f"NEW prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
             response_content = self.llm.invoke(new_messages)
             
