@@ -213,12 +213,12 @@ class Pipeline:
             new_messages = [
                 SystemMessage(content=systemPrompt),
                 HumanMessage(content=human_content),
-                AIMessage(content=tool_response),
-                HumanMessage(content="Using the information in your previous message, please answer my initial message."),
+                AIMessage(content="This is information I was able to retreive using a tool:" + tool_response),
+                HumanMessage(content="Given this information, answer my initial message."),
                 ]
             print(f"NEW prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
-            response_content = self.llm_notools.invoke(messages)
+            response_content = self.llm_notools.invoke(new_messages)
             
 
 
