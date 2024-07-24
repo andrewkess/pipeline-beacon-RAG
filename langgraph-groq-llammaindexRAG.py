@@ -180,7 +180,7 @@ class Pipeline:
 
         last_message = messages[-1]
         systemPrompt = messages[0].content
-        systemPrompt = 'You are a helpful AI Assistant named Beacon. You do not use any tools.'
+        systemPrompt = 'You are a helpful AI Assistant named Beacon.'
         # print(f"SYSTEM PROMPT BABY: {systemPrompt}")
 
 
@@ -214,7 +214,7 @@ class Pipeline:
                 SystemMessage(content=systemPrompt),
                 HumanMessage(content=human_content),
                 AIMessage(content=tool_response),
-                HumanMessage(content="Using ONLY the information provided in your previous message, please re-answer my initial question. Do NOT use a tool. Do not use a weather tool."),
+                HumanMessage(content="Using the information you provided in your previous message, please re-answer my initial question."),
                 ]
             print(f"NEW prompt being used: {new_messages}")
             # Invoke the LLM with the new formatted prompt
