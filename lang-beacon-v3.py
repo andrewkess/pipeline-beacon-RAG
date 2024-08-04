@@ -25,7 +25,7 @@ from langchain_core.utils.function_calling import convert_to_openai_function
 from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
 import json
 from langgraph.prebuilt import ToolExecutor, ToolInvocation
-from langchain_ollama import ChatOllama
+from langchain_experimental.llms.ollama_functions import OllamaFunctions
 from langchain.memory import ChatMessageHistory
 
 class AgentState(TypedDict):
@@ -65,7 +65,7 @@ class Pipeline:
 #     model="gpt-4o-mini",
 
 
-        self.llm = ChatOllama(
+        self.llm = OllamaFunctions(
                     model=self.valves.LLAMAINDEX_MODEL_NAME,
                     base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
                     format="json",  # Ensure JSON format is used for tool integration
@@ -81,7 +81,7 @@ class Pipeline:
         #             # other params...
         #         )
         
-        self.llm_notools = ChatOllama(
+        self.llm_notools = OllamaFunctions(
                     model=self.valves.LLAMAINDEX_MODEL_NAME,
                     base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
                     temperature=0
