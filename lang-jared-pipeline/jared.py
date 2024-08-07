@@ -23,23 +23,14 @@ from pydantic import BaseModel
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph
 
-# from .base_agent import BaseAgent
-# from .utils.read_markdown import read_markdown_file
-# from .utils.logging import log_function, setup_logging
-
-
-import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Union, TypeVar, Generic
 from typing_extensions import TypedDict
-from datetime import datetime
 
 import requests
 import time
 import json
-import os
-from typing import List, Dict
-# from utils.logging import log_function, setup_logging
+
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 # from config.load_configs import load_config
 # 
@@ -795,7 +786,7 @@ class Pipeline:
         self.index = None
 
         self.valves = self.Valves(
-            **{
+            {
                 "LLAMAINDEX_OLLAMA_BASE_URL": os.getenv("LLAMAINDEX_OLLAMA_BASE_URL", "http://localhost:11434"),
                 "LLAMAINDEX_MODEL_NAME": os.getenv("LLAMAINDEX_MODEL_NAME", "llama3"),
                 "LLAMAINDEX_EMBEDDING_MODEL_NAME": os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text"),
