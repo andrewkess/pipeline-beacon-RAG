@@ -5,7 +5,7 @@ date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for interacting with the Jar3d agent using the Langgraph framework.
-requirements: langgraph, termcolor, pydantic, datetime
+requirements: langgraph, termcolor, pydantic, datetime, llama-index
 """
 
 from typing import List, Union, Generator, Iterator, Any, Dict
@@ -21,10 +21,12 @@ from typing import TypedDict, Annotated
 from pydantic import BaseModel
 
 from langgraph.graph.message import add_messages
-from base_agent import BaseAgent
-from utils.read_markdown import read_markdown_file
-from utils.logging import log_function, setup_logging
 from langgraph.graph import StateGraph
+
+from .base_agent import BaseAgent
+from .utils.read_markdown import read_markdown_file
+from .utils.logging import log_function, setup_logging
+
 
 setup_logging(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
