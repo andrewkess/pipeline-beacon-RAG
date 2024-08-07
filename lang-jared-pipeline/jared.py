@@ -33,20 +33,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Union, TypeVar, Generic
 from typing_extensions import TypedDict
 from datetime import datetime
-from models.llms import (
-    OllamaModel,
-    OpenAIModel,
-    GroqModel,
-    GeminiModel,
-    ClaudeModel,
-    VllmModel,
-)
 
 import requests
 import time
 import json
 import os
-import logging
 from typing import List, Dict
 from utils.logging import log_function, setup_logging
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
@@ -57,7 +48,6 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 # LOGGING FILES AND SETUP
 
-import logging
 import colorlog
 from functools import wraps
 import time
