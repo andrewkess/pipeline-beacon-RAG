@@ -24,6 +24,17 @@ class Pipeline:
     class Valves(BaseModel):
         pass
 
+
+        # self.valves = self.Valves(
+        #     **{
+        #         "LLAMAINDEX_OLLAMA_BASE_URL": os.getenv("LLAMAINDEX_OLLAMA_BASE_URL", "http://localhost:11434"),
+        #         "LLAMAINDEX_MODEL_NAME": os.getenv("LLAMAINDEX_MODEL_NAME", "llama3.1"), #llama3-groq-tool-use
+        #         "LLAMAINDEX_EMBEDDING_MODEL_NAME": os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text"),
+        #         "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", "default-key"),
+        #         "OPENWEATHERMAP_API_KEY": os.getenv("OPENWEATHERMAP_API_KEY", "default-key"),
+        #     }
+        # )
+
     def __init__(self):
         self.name = "Pipeline Example"
         self.state = State(
