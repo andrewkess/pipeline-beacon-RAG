@@ -39,7 +39,7 @@ import time
 import json
 import os
 from typing import List, Dict
-from utils.logging import log_function, setup_logging
+# from utils.logging import log_function, setup_logging
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 # from config.load_configs import load_config
 # 
