@@ -5,7 +5,7 @@ date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for interacting with the Jar3d agent using the Langgraph framework.
-requirements: langgraph, termcolor, pydantic, datetime, llama-index, colorlog
+requirements: langgraph, termcolor, pydantic, datetime, llama-index, colorlog, llama-index-llms-ollama, llama-index-embeddings-ollama
 """
 
 from typing import List, Union, Generator, Iterator, Any, Dict
