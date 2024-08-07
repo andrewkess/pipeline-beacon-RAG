@@ -795,20 +795,20 @@ class Pipeline:
         from llama_index.llms.ollama import Ollama
         from llama_index.core import Settings, VectorStoreIndex, SimpleDirectoryReader
 
-        Settings.embed_model = OllamaEmbedding(
-            model_name=self.llama_index_embedding_model_name,
-            base_url=self.llama_index_ollama_base_url,
-        )
-        Settings.llm = Ollama(
-            model=self.llama_index_model_name,
-            base_url=self.llama_index_ollama_base_url,
-        )
+        # Settings.embed_model = OllamaEmbedding(
+        #     model_name=self.llama_index_embedding_model_name,
+        #     base_url=self.llama_index_ollama_base_url,
+        # )
+        # Settings.llm = Ollama(
+        #     model=self.llama_index_model_name,
+        #     base_url=self.llama_index_ollama_base_url,
+        # )
 
         # This function is called when the server is started.
         global documents, index
 
-        self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
-        self.index = VectorStoreIndex.from_documents(self.documents)
+        # self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
+        # self.index = VectorStoreIndex.from_documents(self.documents)
         pass
 
     async def on_shutdown(self):
