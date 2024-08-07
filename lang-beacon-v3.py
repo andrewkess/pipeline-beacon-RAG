@@ -5,7 +5,7 @@ date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
-requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community, langchain-experimental, langchain-ollama
+requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community, langchain-experimental, langchain-ollama, langchain-nomic
 """
 
 # TO DO: Add tools to system prompt so LLM has awareness / usage rules on tools (see Ollama Functions docs), Add Langsmith evals and tracking, etc.
@@ -145,8 +145,8 @@ class Pipeline:
         # This function is called when the server is started.
         global documents, index
 
-        self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
-        self.index = VectorStoreIndex.from_documents(self.documents)
+        # self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
+        # self.index = VectorStoreIndex.from_documents(self.documents)
         pass
 
     async def on_shutdown(self):

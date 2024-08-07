@@ -1,11 +1,12 @@
 """
-title: Llama Index Ollama Pipeline
+title: Beacon Llama Index Ollama Pipeline
 author: open-webui
 date: 2024-05-30
 version: 1.0
 license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
-requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community, langchain-experimental, langchain-ollama
+requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama, langgraph, httpx, langchain, langchain_openai, pyowm, langchain-community, langchain-experimental, langchain-ollama, langchain-nomic, langchain-core==0.2.4, langgraph==0.0.64, langchain-community==0.2.3, langchain-openai==0.1.8, beautifulsoup4==4.12.3, termcolor==2.4.0, colorlog==6.8.2, fake-useragent==1.5.1, playwright==1.45.0, pypdf==4.2.0, llmsherpa==0.1.4, fastembed==0.3.4, faiss-cpu==1.8.0.post1, FlashRank==0.2.6
+
 """
 
 # TO DO: Add tools to system prompt so LLM has awareness / usage rules on tools (see Ollama Functions docs), Add Langsmith evals and tracking, etc.
@@ -26,7 +27,8 @@ from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
 import json
 from langgraph.prebuilt import ToolExecutor, ToolInvocation
 from langchain_experimental.llms.ollama_functions import OllamaFunctions
-from langchain_ollama import ChatOllama
+from langchain.memory import ChatMessageHistory
+from jared import start_chat_session
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -65,68 +67,68 @@ class Pipeline:
 #     model="gpt-4o-mini",
 
 
-        self.llm = OllamaFunctions(
-                    model=self.valves.LLAMAINDEX_MODEL_NAME,
-                    base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
-                    format="json",  # Ensure JSON format is used for tool integration
-                    temperature=0
-                )
+    #     self.llm = OllamaFunctions(
+    #                 model=self.valves.LLAMAINDEX_MODEL_NAME,
+    #                 base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+    #                 format="json",  # Ensure JSON format is used for tool integration
+    #                 temperature=0
+    #             )
 
-        #self.weather = OpenWeatherMapAPIWrapper()
+    #     #self.weather = OpenWeatherMapAPIWrapper()
 
-        # self.llm_notools = ChatOllama(
-        #             model="llama3",
-        #             base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
-        #             temperature=0,
-        #             # other params...
-        #         )
+    #     # self.llm_notools = ChatOllama(
+    #     #             model="llama3",
+    #     #             base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+    #     #             temperature=0,
+    #     #             # other params...
+    #     #         )
         
-        self.llm_notools = OllamaFunctions(
-                    model=self.valves.LLAMAINDEX_MODEL_NAME,
-                    base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
-                    temperature=0
-        )
+    #     self.llm_notools = OllamaFunctions(
+    #                 model=self.valves.LLAMAINDEX_MODEL_NAME,
+    #                 base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+    #                 temperature=0
+    #     )
 
-        self.tools = [OpenWeatherMapQueryRun()]
-       # self.functions = [convert_to_ollama_tool(t) for t in self.tools]
-        self.llm = self.llm.bind_tools(self.tools)
+    #     self.tools = [OpenWeatherMapQueryRun()]
+    #    # self.functions = [convert_to_ollama_tool(t) for t in self.tools]
+    #     self.llm = self.llm.bind_tools(self.tools)
 
-        self.tool_executor = ToolExecutor(self.tools)
-
-
-        # Define a LangChain graph
-        # self.workflow = Graph()
-
-        self.workflow = StateGraph(AgentState)
+    #     self.tool_executor = ToolExecutor(self.tools)
 
 
-        self.workflow.add_node("agent", self.function_1)
-        self.workflow.add_node("tool", self.function_2)
+    #     # Define a LangChain graph
+    #     # self.workflow = Graph()
 
-        # The conditional edge requires the following info below.
-        # First, we define the start node. We use `agent`.
-        # This means these are the edges taken after the `agent` node is called.
-        # Next, we pass in the function that will determine which node is called next, in our case where_to_go().
-
-        self.workflow.add_conditional_edges("agent", self.where_to_go,{   # Based on the return from where_to_go
-                                                                # If return is "continue" then we call the tool node.
-                                                                "continue": "tool",
-                                                                # Otherwise we finish. END is a special node marking that the graph should finish.
-                                                                "end": END
-                                                            }
-        )
-
-        # We now add a normal edge from `tools` to `agent`.
-        # This means that if `tool` is called, then it has to call the 'agent' next. 
-        self.workflow.add_edge('tool', 'agent')
-
-        # Basically, agent node has the option to call a tool node based on a condition, 
-        # whereas tool node must call the agent in all cases based on this setup.
-
-        self.workflow.set_entry_point("agent")
+    #     self.workflow = StateGraph(AgentState)
 
 
-        self.app = self.workflow.compile()
+    #     self.workflow.add_node("agent", self.function_1)
+    #     self.workflow.add_node("tool", self.function_2)
+
+    #     # The conditional edge requires the following info below.
+    #     # First, we define the start node. We use `agent`.
+    #     # This means these are the edges taken after the `agent` node is called.
+    #     # Next, we pass in the function that will determine which node is called next, in our case where_to_go().
+
+    #     self.workflow.add_conditional_edges("agent", self.where_to_go,{   # Based on the return from where_to_go
+    #                                                             # If return is "continue" then we call the tool node.
+    #                                                             "continue": "tool",
+    #                                                             # Otherwise we finish. END is a special node marking that the graph should finish.
+    #                                                             "end": END
+    #                                                         }
+    #     )
+
+    #     # We now add a normal edge from `tools` to `agent`.
+    #     # This means that if `tool` is called, then it has to call the 'agent' next. 
+    #     self.workflow.add_edge('tool', 'agent')
+
+    #     # Basically, agent node has the option to call a tool node based on a condition, 
+    #     # whereas tool node must call the agent in all cases based on this setup.
+
+    #     self.workflow.set_entry_point("agent")
+
+
+    #     self.app = self.workflow.compile()
 
     async def on_startup(self):
         from llama_index.embeddings.ollama import OllamaEmbedding
@@ -145,8 +147,8 @@ class Pipeline:
         # This function is called when the server is started.
         global documents, index
 
-        self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
-        self.index = VectorStoreIndex.from_documents(self.documents)
+        # self.documents = SimpleDirectoryReader("/app/backend/data").load_data()
+        # self.index = VectorStoreIndex.from_documents(self.documents)
         pass
 
     async def on_shutdown(self):
@@ -334,35 +336,47 @@ class Pipeline:
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
-        # This is where you can add your custom RAG pipeline.
-        # Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response.
+    #     # This is where you can add your custom RAG pipeline.
+    #     # Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response.
 
-        # If you'd like to check for title generation, you can add the following check
-        # if body.get("title", False):
-        #     print("Title Generation Request")
-        #     return "Fake Title for Now"
+    #     # If you'd like to check for title generation, you can add the following check
+    #     # if body.get("title", False):
+    #     #     print("Title Generation Request")
+    #     #     return "Fake Title for Now"
 
         print(messages)
         print(user_message)
 
-        # query_engine = self.index.as_query_engine(streaming=True)
-        # response = query_engine.query(user_message)
+    #     # query_engine = self.index.as_query_engine(streaming=True)
+    #     # response = query_engine.query(user_message)
 
-        # return response.response_gen
+    #     # return response.response_gen
     
-    # Invoke the LangGraph compiled app
-        # inputs = {"messages": [user_message]}
+    # # Invoke the LangGraph compiled app
+    #     # inputs = {"messages": [user_message]}
         
-        # inputs = {"messages": [
-        #     # SystemMessage(content=messages[0].content), 
-        #     HumanMessage(content=user_message)]}
+    #     # inputs = {"messages": [
+    #     #     # SystemMessage(content=messages[0].content), 
+    #     #     HumanMessage(content=user_message)]}
 
-        inputs = {"messages": self.prepare_pipeline_input(messages)}
+    #     inputs = {"messages": self.prepare_pipeline_input(messages)}
 
-        output = self.app.invoke(inputs)
-        # print(f"FINAL OUTPUT: {output}")
+    #     output = self.app.invoke(inputs)
+    #     # print(f"FINAL OUTPUT: {output}")
 
-        # Assuming output always contains a 'messages' list with at least one message
-        last_message = output['messages'][-1].content if output['messages'] else "No AI message response found from pipeline"
+    #     # Assuming output always contains a 'messages' list with at least one message
+    #     last_message = output['messages'][-1].content if output['messages'] else "No AI message response found from pipeline"
 
-        return last_message
+    #     return last_message
+
+
+
+
+        # Prepare the input for the chatbot
+        # formatted_user_input = self.prepare_pipeline_input(messages)
+        
+        # Start the chat session and get the response
+        response = start_chat_session(user_message)
+        print(f"FINAL RESPONSE FROM JARED: {response}")
+
+        return response

@@ -1,2 +1,12 @@
 .env
 /venv
+.venv
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+
+# Ignore __pycache__ directories
+__pycache__/
+
+# Ignore specific tools directory and its contents
+lang-jared-pipeline\tools/__pycache__/
