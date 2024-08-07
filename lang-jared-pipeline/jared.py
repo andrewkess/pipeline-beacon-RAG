@@ -785,13 +785,10 @@ class Pipeline:
         self.documents = None
         self.index = None
 
-        self.valves = self.Valves(
-            {
-                "LLAMAINDEX_OLLAMA_BASE_URL": os.getenv("LLAMAINDEX_OLLAMA_BASE_URL", "http://localhost:11434"),
-                "LLAMAINDEX_MODEL_NAME": os.getenv("LLAMAINDEX_MODEL_NAME", "llama3"),
-                "LLAMAINDEX_EMBEDDING_MODEL_NAME": os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text"),
-            }
-        )
+        self.llama_index_ollama_base_url = os.getenv("LLAMAINDEX_OLLAMA_BASE_URL", "http://localhost:11434")
+        self.llama_index_model_name = os.getenv("LLAMAINDEX_MODEL_NAME", "llama3")
+        self.llama_index_embedding_model_name = os.getenv("LLAMAINDEX_EMBEDDING_MODEL_NAME", "nomic-embed-text")
+
 
     async def on_startup(self):
         from llama_index.embeddings.ollama import OllamaEmbedding
@@ -799,12 +796,12 @@ class Pipeline:
         from llama_index.core import Settings, VectorStoreIndex, SimpleDirectoryReader
 
         Settings.embed_model = OllamaEmbedding(
-            model_name=self.valves.LLAMAINDEX_EMBEDDING_MODEL_NAME,
-            base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+            model_name=self.llama_index_embedding_model_name,
+            base_url=self.llama_index_ollama_base_url,
         )
         Settings.llm = Ollama(
-            model=self.valves.LLAMAINDEX_MODEL_NAME,
-            base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
+            model=self.llama_index_model_name,
+            base_url=self.llama_index_ollama_base_url,
         )
 
         # This function is called when the server is started.
